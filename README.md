@@ -1,10 +1,10 @@
 # WFlow
 
-[![Gem Version](https://badge.fury.io/rb/rekiq.svg)](http://badge.fury.io/rb/rekiq)
-[![Build Status](https://travis-ci.org/junhanamaki/rekiq.svg?branch=master)](https://travis-ci.org/junhanamaki/rekiq)
-[![Code Climate](https://codeclimate.com/github/junhanamaki/rekiq.png)](https://codeclimate.com/github/junhanamaki/rekiq)
-[![Test Coverage](https://codeclimate.com/github/junhanamaki/rekiq/coverage.png)](https://codeclimate.com/github/junhanamaki/rekiq)
-[![Dependency Status](https://gemnasium.com/junhanamaki/rekiq.svg)](https://gemnasium.com/junhanamaki/rekiq)
+[![Gem Version](https://badge.fury.io/rb/w_flow.svg)](http://badge.fury.io/rb/w_flow)
+[![Build Status](https://travis-ci.org/junhanamaki/w_flow.svg?branch=master)](https://travis-ci.org/junhanamaki/w_flow)
+[![Code Climate](https://codeclimate.com/github/junhanamaki/w_flow.png)](https://codeclimate.com/github/junhanamaki/w_flow)
+[![Test Coverage](https://codeclimate.com/github/junhanamaki/w_flow/coverage.png)](https://codeclimate.com/github/junhanamaki/w_flow)
+[![Dependency Status](https://gemnasium.com/junhanamaki/w_flow.svg)](https://gemnasium.com/junhanamaki/w_flow)
 
 ## Dependencies
 
