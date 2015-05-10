@@ -1,5 +1,3 @@
-#$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-
 if ENV['CODECLIMATE_REPO_TOKEN'].nil?
   require 'simplecov'
   SimpleCov.start do
