@@ -41,10 +41,17 @@ module WFlow
 
       def execute(*args)
         options = args.last.is_a?(Hash) ? args.pop : {}
+
+        unless options.keys.all? { |key| [:if, :unless, :around].include?(key) }
+          raise InvalidArgument, 'valid keys are :if, :unless and :around'
+        end
+
         args << Proc.new if block_given?
 
         unless args.length > 0
-          raise InvalidArgument, 'execute must be invoked with at least one WFlow::Process/String/Symbol/Proc or a block'
+          raise InvalidArgument,
+                'execute must be invoked with at least one ' \
+                'WFlow::Process/String/Symbol/Proc as argument or a block'
         end
 
         @process_nodes << ProcessNode.new(args, options)

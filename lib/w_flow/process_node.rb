@@ -1,15 +1,6 @@
 module WFlow
   class ProcessNode
     def initialize(tasks, options)
-      unless tasks.is_a?(Array) && tasks.length > 0
-        raise InvalidArgument, 'tasks must be a non empty Array'
-      end
-
-      unless options.is_a?(Hash) &&
-             options.keys.all? { |key| [:if, :unless, :around].include?(key) }
-        raise InvalidArgument, 'known options are :if, :unless and :around'
-      end
-
       @tasks   = tasks
       @options = options
     end
@@ -22,7 +13,7 @@ module WFlow
           owner_process.instance_eval(task.to_s)
         elsif task.is_a?(Proc)
           owner_process.instance_eval(&task)
-        elsif task.is_a?(Process)
+        elsif task == Process
           task.run_as_task(owner_process.flow)
         else
           raise UnknownTask, "don't know how to execute task #{task}"
@@ -45,7 +36,7 @@ module WFlow
       @options[:unless].nil? || !eval_condition(@options[:unless], owner_process)
     end
 
-    def eval_condition?(condition, owner_process)
+    def eval_condition(condition, owner_process)
       ((condition.is_a?(String) || condition.is_a?(Symbol)) &&
        owner_process.instance_eval(condition.to_s)) ||
       (condition.is_a?(Proc) && owner_process.instance_eval(&condition))
