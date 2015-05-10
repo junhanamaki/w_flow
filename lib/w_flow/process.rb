@@ -13,7 +13,8 @@ module WFlow
 
     def self.included(klass)
       klass.extend(ClassMethods)
-      klass.init
+
+      klass.instance_variable_set('@process_nodes', [])
     end
 
     module ClassMethods
@@ -38,50 +39,20 @@ module WFlow
         end
       end
 
-      def init
-        @process_nodes ||= []
-      end
-
-      def run(params = {})
-        if params.is_a?(Hash)
-          run_as_main_process(params)
-        else
-          run_as_task_process(params)
-        end
-      end
-
       def execute(*args)
         options = args.pop if args.last.is_a?(Hash)
-
         args << Proc.new if block_given?
 
         @process_nodes << ProcessNode.new(args, options)
       end
 
-    protected
-
-      def run_as_main_process(params)
-        flow = Flow.new(params)
-
-        instance = new(flow)
-
-        begin
-          instance.setup
-
-          @process_nodes.each do |process_node|
-            process_node.execute(instance)
-          end
-
-          instance.perform
-        rescue FlowFailure
-          instance.rollback
+      def run(params = {})
+        unless params.is_a?(Hash)
+          raise InvalidArgument, 'run must be invoked with an Hash'
         end
-
-        instance.final
       end
 
-      def run_as_task_process(flow)
-        instance = new(flow)
+      def run_as_dependency(flow)
       end
     end
   end
