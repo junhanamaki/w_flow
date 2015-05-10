@@ -24,15 +24,15 @@ module WFlow
   protected
 
     def execute_node?(owner_process)
-      if_condition_allows_execution?(owner_process) &&
-      unless_condition_allows_execution?(owner_process)
+      allowed_by_if_condition?(owner_process) &&
+      allowed_by_unless_condition?(owner_process)
     end
 
-    def if_condition_allows_execution?(owner_process)
+    def allowed_by_if_condition?(owner_process)
       @options[:if].nil? || eval_condition(@options[:if], owner_process)
     end
 
-    def unless_condition_allows_execution?(owner_process)
+    def allowed_by_unless_condition?(owner_process)
       @options[:unless].nil? || !eval_condition(@options[:unless], owner_process)
     end
 
