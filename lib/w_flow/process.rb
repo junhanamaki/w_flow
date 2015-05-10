@@ -40,19 +40,26 @@ module WFlow
       end
 
       def execute(*args)
-        options = args.pop if args.last.is_a?(Hash)
+        options = args.last.is_a?(Hash) ? args.pop : {}
         args << Proc.new if block_given?
+
+        unless args.length > 0
+          raise InvalidArgument, 'execute must be invoked with at least one WFlow::Process/String/Symbol/Proc or a block'
+        end
 
         @process_nodes << ProcessNode.new(args, options)
       end
 
       def run(params = {})
         unless params.is_a?(Hash)
-          raise InvalidArgument, 'run must be invoked with an Hash'
+          raise InvalidArgument, 'run must be invoked with no arguments or with an Hash'
         end
+
+        instance = new(Flow.new(params))
       end
 
-      def run_as_dependency(flow)
+      def run_as_task(flow)
+        instance = new(flow)
       end
     end
   end
