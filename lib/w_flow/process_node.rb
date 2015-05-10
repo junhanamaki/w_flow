@@ -1,6 +1,6 @@
 module WFlow
   class ProcessNode
-    def initialize(tasks, options = {})
+    def initialize(tasks, options)
       @tasks   = tasks
       @options = options
     end

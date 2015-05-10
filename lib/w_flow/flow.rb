@@ -2,7 +2,7 @@ module WFlow
   class Flow
     attr_reader :data, :failure_message
 
-    def initialize(data = {})
+    def initialize(data)
       @data    = Data.new(data)
       @failure = false
       @failure_message = nil

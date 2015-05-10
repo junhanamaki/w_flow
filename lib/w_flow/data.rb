@@ -1,10 +1,6 @@
 module WFlow
   class Data
-    def initialize(data = {})
-      unless data.is_a?(Hash)
-        raise InvalidArgument, 'argument must be of type Hash'
-      end
-
+    def initialize(data)
       @data = data
     end
 

@@ -2,23 +2,7 @@ require 'spec_helper'
 
 describe WFlow::Data do
   describe '.new' do
-    context 'when invoked with a non Hash argument' do
-      it 'raises WFlow::InvalidArgument error' do
-        expect do
-          WFlow::Data.new(Object.new)
-        end.to raise_error(WFlow::InvalidArgument)
-      end
-    end
-
-    context 'when invoked with no args' do
-      before { @data = WFlow::Data.new }
-
-      it 'returns a new instance of WFlow::Data' do
-        expect(@data).to be_a(WFlow::Data)
-      end
-    end
-
-    context 'when invoked with an hash' do
+    context 'when invoked with an Hash' do
       let(:hash) { { content: 1 } }
       before { @data = WFlow::Data.new(hash) }
 

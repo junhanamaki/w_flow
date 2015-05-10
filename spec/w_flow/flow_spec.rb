@@ -1,27 +1,11 @@
 require 'spec_helper'
 
 describe WFlow::Flow do
+  let(:hash) { { content: 1 } }
+  before     { @flow = WFlow::Flow.new(hash) }
+
   describe '.new' do
-    context 'when invoked with a non Hash argument' do
-      it 'raises WFlow::InvalidArgument error' do
-        expect do
-          WFlow::Flow.new(Object.new)
-        end.to raise_error(WFlow::InvalidArgument)
-      end
-    end
-
-    context 'when invoked without arguments' do
-      before { @flow = WFlow::Flow.new }
-
-      it 'returns a new instance of WFlow::Flow' do
-        expect(@flow).to be_a(WFlow::Flow)
-      end
-    end
-
     context 'when invoked with an Hash' do
-      let(:hash) { { content: 1 } }
-      before     { @flow = WFlow::Flow.new(hash) }
-
       it 'returns a new instance of WFlow::Flow' do
         expect(@flow).to be_a(WFlow::Flow)
       end
@@ -29,16 +13,12 @@ describe WFlow::Flow do
   end
 
   describe '#data' do
-    before { @flow = WFlow::Flow.new }
-
     it 'returns a instance of WFlow::Data' do
       expect(@flow.data).to be_a(WFlow::Data)
     end
   end
 
   describe '#success?' do
-    before { @flow = WFlow::Flow.new }
-
     context 'if #failure! was not invoked' do
       it 'returns true' do
         expect(@flow.success?).to eq(true)
@@ -55,8 +35,6 @@ describe WFlow::Flow do
   end
 
   describe '#failure?' do
-    before { @flow = WFlow::Flow.new }
-
     context 'if #failure! was not invoked' do
       it 'returns false' do
         expect(@flow.failure?).to eq(false)
@@ -73,8 +51,6 @@ describe WFlow::Flow do
   end
 
   describe '#failure!' do
-    before { @flow = WFlow::Flow.new }
-
     context 'when invoked without arguments' do
       before { @flow.failure! }
 
@@ -102,8 +78,6 @@ describe WFlow::Flow do
   end
 
   describe '#failure_message' do
-    before { @flow = WFlow::Flow.new }
-
     context 'if failure! was not invoked' do
       it 'returns nil' do
         expect(@flow.failure_message).to be_nil
