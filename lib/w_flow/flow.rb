@@ -19,6 +19,8 @@ module WFlow
     def failure!(message = nil)
       @failure = true
       @failure_message = message
+
+      raise FlowFailure
     end
 
     def stop!

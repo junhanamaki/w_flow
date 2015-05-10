@@ -42,31 +42,64 @@ module WFlow
       def execute(*args)
         options = args.last.is_a?(Hash) ? args.pop : {}
 
-        unless options.keys.all? { |key| [:if, :unless, :around].include?(key) }
-          raise InvalidArgument, INVALID_OPTION_KEYS
-        end
+        validate_options!(options)
 
         args << Proc.new if block_given?
 
-        raise InvalidArgument, INVALID_TASKS unless args.length > 0
+        validate_tasks!(args)
 
         @process_nodes << ProcessNode.new(args, options)
       end
 
       def run(params = {})
-        raise InvalidArgument, INVALID_RUN_PARAMS unless params.is_a?(Hash)
+        validate_params!(params)
 
-        instance = new(Flow.new(params))
+        flow     = Flow.new(params)
+        instance = new(flow)
+
+        begin
+          catch :stop do
+            catch :skip do
+              instance.setup
+
+              @process_nodes.each do |process_node|
+                process_node.execute(instance)
+              end
+
+              instance.perform
+            end
+          end
+        catch FlowFailure
+          rollback(flow)
+        end
+
+        final(flow)
       end
 
       def run_as_task(flow)
         instance = new(flow)
       end
 
-      INVALID_OPTION_KEYS = 'valid keys are :if, :unless and :around'
-      INVALID_TASKS = 'execute must be invoked with at least one ' \
-                      'WFlow::Process/String/Symbol/Proc as argument or a block'
-      INVALID_RUN_PARAMS = 'run must be invoked with no arguments or with an Hash'
+    protected
+
+      def validate_options!(options)
+        unless options.keys.all? { |key| [:if, :unless, :around].include?(key) }
+          raise InvalidArgument, INVALID_OPTION
+        end
+      end
+
+      def validate_tasks!(tasks)
+        raise InvalidArgument, INVALID_TASKS unless tasks.length > 0
+      end
+
+      def validate_params!(params)
+        raise InvalidArgument, INVALID_PARAMS unless params.is_a?(Hash)
+      end
+
+      INVALID_OPTION = 'valid keys are :if, :unless and :around'
+      INVALID_TASKS  = 'execute must be invoked with at least one ' \
+                       'WFlow::Process/String/Symbol/Proc as argument or a block'
+      INVALID_PARAMS = 'run must be invoked with no arguments or with an Hash'
     end
   end
 end
