@@ -14,7 +14,7 @@ describe WFlow::Data do
       before { @data = WFlow::Data.new }
 
       it 'returns a new instance of WFlow::Data' do
-        expect(@data.class).to eq(WFlow::Data)
+        expect(@data).to be_a(WFlow::Data)
       end
     end
 
@@ -23,7 +23,7 @@ describe WFlow::Data do
       before { @data = WFlow::Data.new(hash) }
 
       it 'returns a new instance of WFlow::Data' do
-        expect(@data.class).to eq(WFlow::Data)
+        expect(@data).to be_a(WFlow::Data)
       end
 
       it 'dynamically creates getters for hash, which when invoked returns ' \
