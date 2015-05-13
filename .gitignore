@@ -13,3 +13,5 @@
 .ruby-version
 
 *.gem
+
+dump.rdb

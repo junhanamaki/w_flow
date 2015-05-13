@@ -18,6 +18,8 @@ module WFlow
     end
 
     module ClassMethods
+      attr_reader :process_nodes
+
       def data_accessor(*keys)
         data_writer(keys)
         data_reader(keys)
@@ -39,67 +41,48 @@ module WFlow
         end
       end
 
-      def execute(*args)
-        options = args.last.is_a?(Hash) ? args.pop : {}
+      def execute(*elements)
+        options = elements.last.is_a?(Hash) ? elements.pop : {}
 
-        validate_options!(options)
+        validate_node_options(options)
 
-        args << Proc.new if block_given?
+        elements << Proc.new if block_given?
 
-        validate_tasks!(args)
+        validate_node_elements(elements)
 
-        @process_nodes << ProcessNode.new(args, options)
+        process_nodes << ProcessNode.new(elements, options)
       end
 
       def run(params = {})
-        validate_params!(params)
+        validate_flow_params(params)
 
-        flow     = Flow.new(params)
-        instance = new(flow)
-
-        begin
-          catch :stop do
-            catch :skip do
-              instance.setup
-
-              @process_nodes.each do |process_node|
-                process_node.execute(instance)
-              end
-
-              instance.perform
-            end
-          end
-        catch FlowFailure
-          rollback(flow)
-        end
-
-        final(flow)
-      end
-
-      def run_as_task(flow)
-        instance = new(flow)
+        Flow.new(self, params).start
       end
 
     protected
 
-      def validate_options!(options)
+      def validate_node_options(options)
         unless options.keys.all? { |key| [:if, :unless, :around].include?(key) }
           raise InvalidArgument, INVALID_OPTION
         end
       end
 
-      def validate_tasks!(tasks)
-        raise InvalidArgument, INVALID_TASKS unless tasks.length > 0
+      def validate_node_elements(elements)
+        unless elements.length > 0
+          raise InvalidArgument, INVALID_ELEMENTS
+        end
       end
 
-      def validate_params!(params)
-        raise InvalidArgument, INVALID_PARAMS unless params.is_a?(Hash)
+      def validate_flow_params(params)
+        unless params.is_a?(Hash)
+          raise InvalidArgument, INVALID_PARAMS
+        end
       end
 
-      INVALID_OPTION = 'valid keys are :if, :unless and :around'
-      INVALID_TASKS  = 'execute must be invoked with at least one ' \
-                       'WFlow::Process/String/Symbol/Proc as argument or a block'
-      INVALID_PARAMS = 'run must be invoked with no arguments or with an Hash'
+      INVALID_OPTION   = 'valid option keys are :if, :unless and :around'
+      INVALID_ELEMENTS = 'execute must be invoked with at least one ' \
+                         'WFlow::Process/String/Symbol/Proc as argument or a block'
+      INVALID_PARAMS   = 'run must be invoked with no arguments or with an Hash'
     end
   end
 end
