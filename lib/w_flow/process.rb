@@ -11,11 +11,11 @@ module WFlow
     def rollback; end
     def final;    end
 
-    def eval_expression(expression, *args)
+    def expression_eval(expression, *args)
       if expression.is_a?(String) || expression.is_a?(Symbol)
         instance_eval(expression.to_s, *args)
       elsif expression.is_a?(Proc)
-        instance_eval(&expression, *args)
+        instance_exec(*args, &expression)
       else
         raise InvalidArgument, UNKNOWN_EXPRESSION
       end

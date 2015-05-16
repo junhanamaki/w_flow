@@ -23,7 +23,7 @@ module WFlow
     def failure!(message = nil, options = {})
       @failure = { state: true, message: message }
 
-      raise FlowFailure unless options[:silent]
+      raise FlowFailure unless !!options[:silent]
     end
 
     def reset_state

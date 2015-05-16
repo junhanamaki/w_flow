@@ -24,7 +24,7 @@ module WFlow
     end
 
     def execute_component(component)
-
+      @current_process
     end
 
   protected

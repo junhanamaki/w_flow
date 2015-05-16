@@ -9,13 +9,13 @@ module WFlow
       validate_initialization!
     end
 
-    def in_context_of(process)
+    def in_context_of(process, &block)
       return unless execute?(process)
 
       if @options[:around].nil?
         yield(@components)
       else
-        yield(@components)
+        process.expression_eval(@options[:around], block)
       end
     end
 
@@ -26,11 +26,11 @@ module WFlow
     end
 
     def allowed_by_if_option?(process)
-      @options[:if].nil? || process.eval_expression(@options[:if])
+      @options[:if].nil? || process.expression_eval(@options[:if])
     end
 
     def allowed_by_unless_option?(process)
-      @options[:unless].nil? || !process.eval_expression(@options[:unless])
+      @options[:unless].nil? || !process.expression_eval(@options[:unless])
     end
 
     def validate_initialization!

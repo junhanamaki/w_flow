@@ -26,7 +26,7 @@ describe WFlow::Flow do
     end
 
     context 'after #failure! was invoked' do
-      before { @flow.failure! }
+      before { @flow.failure! rescue nil }
 
       it 'returns false' do
         expect(@flow.success?).to eq(false)
@@ -42,7 +42,7 @@ describe WFlow::Flow do
     end
 
     context 'if #failure! was invoked' do
-      before { @flow.failure! }
+      before { @flow.failure! rescue nil }
 
       it 'returns true' do
         expect(@flow.failure?).to eq(true)
@@ -52,7 +52,7 @@ describe WFlow::Flow do
 
   describe '#failure!' do
     context 'when invoked without arguments' do
-      before { @flow.failure! }
+      before { @flow.failure! rescue nil }
 
       it 'sets flow as failure' do
         expect(@flow.failure?).to eq(true)
@@ -61,11 +61,17 @@ describe WFlow::Flow do
       it 'does not set failure_message' do
         expect(@flow.failure_message).to be_nil
       end
+
+      it 'raises WFlow::FlowFailure error' do
+        expect do
+          @flow.failure!
+        end.to raise_error(WFlow::FlowFailure)
+      end
     end
 
     context 'when invoked with an argument' do
       let(:args) { { status: 0, message: 'for testing' }}
-      before     { @flow.failure!(args) }
+      before     { @flow.failure!(args) rescue nil }
 
       it 'sets flow as failure' do
         expect(@flow.failure?).to eq(true)
@@ -73,6 +79,31 @@ describe WFlow::Flow do
 
       it 'sets passed argument as failure_message' do
         expect(@flow.failure_message).to eq(args)
+      end
+
+      it 'raises WFlow::FlowFailure error' do
+        expect do
+          @flow.failure!
+        end.to raise_error(WFlow::FlowFailure)
+      end
+    end
+
+    context 'when invoked with options[:silent] equal true' do
+      let(:options) { { silent: true } }
+      before        { @flow.failure!(nil, options) }
+
+      it 'sets flow as failure' do
+        expect(@flow.failure?).to eq(true)
+      end
+
+      it 'does not set failure_message' do
+        expect(@flow.failure_message).to be_nil
+      end
+
+      it 'does not raise WFlow::FlowFailure error' do
+        expect do
+          @flow.failure!(nil, options)
+        end.not_to raise_error
       end
     end
   end
@@ -85,19 +116,19 @@ describe WFlow::Flow do
     end
 
     context 'if failure! was invoked without arguments' do
-      before { @flow.failure! }
+      before { @flow.failure! rescue nil }
 
       it 'returns nil' do
         expect(@flow.failure_message).to be_nil
       end
     end
 
-    context 'if failure! was invoked with an argument' do
-      let(:args) { { status: 0 } }
-      before     { @flow.failure!(args) }
+    context 'if failure! was invoked with message' do
+      let(:message) { { status: 0 } }
+      before        { @flow.failure!(message) rescue nil }
 
-      it 'returns passed argument' do
-        expect(@flow.failure_message).to eq(args)
+      it 'returns passed message' do
+        expect(@flow.failure_message).to eq(message)
       end
     end
   end
