@@ -1,9 +1,9 @@
 module WFlow
   module Worker
     def initialize(flow)
-      @flow         = flow
-      @for_final    = []
-      @for_rollback = []
+      @flow            = flow
+      @for_final       = []
+      @for_rollback    = []
     end
 
     def start(process_class)
@@ -30,22 +30,34 @@ module WFlow
   protected
 
     def execute_process(process_class)
-      process = process_class.new(@flow)
+      change_current_process_to(process_class) do
+        catch :skip do
+          process.setup
 
-      catch :skip do
-        process.setup
+          @for_final << process
 
-        @for_final << process
-
-        process.nodes.each do |node|
-          node.in_context_of(process) do
+          process.nodes.each do |node|
+            node.in_context_of(process) do |components|
+              components.each do |component|
+                execute_component(component)
+              end
+            end
           end
+
+          process.perform
+
+          @for_rollback << process
         end
-
-        process.perform
-
-        @for_rollback << process
       end
+    end
+
+    def change_current_process_to(process_class)
+      previous_process = @current_process
+      @current_process = process_class.new(@flow)
+
+      yield
+
+      @current_process = previous_process
     end
   end
 end

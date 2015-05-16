@@ -2,8 +2,6 @@ module WFlow
   class Node
     VALID_KEYS = [:if, :unless, :around]
 
-    attr_reader :components
-
     def initialize(components, options = {})
       @components = components
       @options    = options
@@ -15,10 +13,9 @@ module WFlow
       return unless execute?(process)
 
       if @options[:around].nil?
-        yield
+        yield(@components)
       else
-        process.eval_expression(@options[:around], '')
-        yield
+        yield(@components)
       end
     end
 
