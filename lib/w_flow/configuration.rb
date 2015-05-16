@@ -1,7 +1,7 @@
 module WFlow
   class Configuration
-    def raise_errors?
-      @raise_errors
+    def supress_errors?
+      @supress_errors
     end
 
     class << self
@@ -21,7 +21,7 @@ module WFlow
   protected
 
     def initialize
-      @raise_errors = false
+      @supress_errors = false
     end
   end
 end

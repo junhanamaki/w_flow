@@ -1,15 +1,15 @@
 module WFlow
   module Worker
     def initialize(flow)
-      @flow = flow
+      @flow         = flow
+      @for_final    = []
+      @for_rollback = []
     end
 
     def start(process_class)
-      process = process_class.new(@flow)
-
       begin
         catch :stop do
-          execute_process(@main_process)
+          execute_process(process)
         end
       rescue FlowFailure
         # TODO: do rollback
@@ -17,29 +17,33 @@ module WFlow
 
       # TODO: do final
     rescue StandardError => e
-      raise if Configuration.raise_errors?
+      message = { message: e.message, backtrace: e.backtrace }
+      flow.failure!(message, silent: true)
 
-      @failure = { message: e.message, backtrace: e.backtrace }
+      raise unless Configuration.supress_errors?
     end
 
+    def execute_component(component)
 
+    end
 
+  protected
 
-    def execute_component(component, flow)
-
-    def
-
-    def execute_component_as_process(process_class)
-      process = process_class.new(self)
+    def execute_process(process_class)
+      process = process_class.new(@flow)
 
       catch :skip do
         process.setup
+
+        @for_final << process
 
         process.nodes.each do |node|
           execute_node(node) if node.execute?(process)
         end
 
         process.perform
+
+        @for_rollback << process
       end
     end
 

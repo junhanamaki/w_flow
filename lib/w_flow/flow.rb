@@ -3,9 +3,8 @@ module WFlow
     attr_reader :data
 
     def initialize(data)
-      @data     = Data.new(data)
-      @executed = []
-      @failure  = { state: false, message: nil }
+      @data    = Data.new(data)
+      @failure = { state: false, message: nil }
     end
 
     def start(process_class)
@@ -21,14 +20,10 @@ module WFlow
       @failure[:state]
     end
 
-    def failure!(message = nil)
+    def failure!(message = nil, options = {})
       @failure = { state: true, message: message }
 
-      raise FlowFailure
-    end
-
-    def failure_message
-      @failure[:message]
+      raise FlowFailure unless options[:silent]
     end
 
     def stop!
@@ -37,6 +32,10 @@ module WFlow
 
     def skip!
       throw :skip, true
+    end
+
+    def failure_message
+      @failure[:message]
     end
 
     def execute!(component)
