@@ -13,10 +13,12 @@ module WFlow
 
     def self.included(klass)
       klass.extend(ClassMethods)
-      klass.instance_variable_set('@process_nodes', [])
+      klass.instance_variable_set('@nodes', [])
     end
 
     module ClassMethods
+      attr_reader :nodes
+
       def data_accessor(*keys)
         data_writer(keys)
         data_reader(keys)
@@ -40,14 +42,12 @@ module WFlow
 
       def execute(*elements, &block)
         options = elements.last.is_a?(Hash) ? elements.pop : {}
-
         elements << block if block_given?
-
-        @process_nodes << ProcessNode.new(elements, options)
+        nodes << Node.new(elements, options)
       end
 
       def run(params = {})
-
+        Flow.new(params).start(self)
       end
     end
   end

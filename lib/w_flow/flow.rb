@@ -1,12 +1,16 @@
 module WFlow
   class Flow
-    attr_reader :data, :failure_message
+    attr_reader :data
 
     def initialize(data)
-      @data            = Data.new(data)
-      @executed        = []
-      @failed          = false
-      @failure_message = nil
+      @data     = Data.new(data)
+      @executed = []
+      @failure  = { state: false, message: nil }
+    end
+
+    def start(process_class)
+      @worker = Worker.new(self)
+      @worker.start(process_class)
     end
 
     def success?
@@ -14,14 +18,17 @@ module WFlow
     end
 
     def failure?
-      @failed
+      @failure[:state]
     end
 
     def failure!(message = nil)
-      @failed          = true
-      @failure_message = message
+      @failure = { state: true, message: message }
 
       raise FlowFailure
+    end
+
+    def failure_message
+      @failure[:message]
     end
 
     def stop!
@@ -32,8 +39,8 @@ module WFlow
       throw :skip, true
     end
 
-    def execute!(element)
-
+    def execute!(component)
+      @worker.execute_component(component)
     end
   end
 end

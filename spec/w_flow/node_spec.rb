@@ -1,20 +1,20 @@
 require 'spec_helper'
 
-describe WFlow::ProcessNode do
+describe WFlow::Node do
   describe '.new' do
     context 'when invoked' do
       let(:elements)   { [:method_name] }
       let(:options) { { if: '', unless: '', around: '' } }
-      before { @process_node = WFlow::ProcessNode.new(elements, options) }
+      before { @node = WFlow::Node.new(elements, options) }
 
-      it 'returns new instance of WFlow::ProcessNode' do
-        expect(@process_node).to be_a(WFlow::ProcessNode)
+      it 'returns new instance of WFlow::Node' do
+        expect(@node).to be_a(WFlow::Node)
       end
     end
   end
 
   describe '.execute' do
-    let(:process_node) { WFlow::ProcessNode.new(elements, options) }
+    let(:node) { WFlow::Node.new(elements, options) }
     let(:elements)   { [] }
     let(:options) { {} }
     let(:flow)    { double }
@@ -26,7 +26,7 @@ describe WFlow::ProcessNode do
       context 'when invoked' do
         it 'invokes method name in elements, binded at object in argument' do
           expect(process).to receive(:test_method)
-          process_node.execute(process)
+          node.execute(process)
         end
       end
     end
@@ -37,7 +37,7 @@ describe WFlow::ProcessNode do
       context 'when invoked' do
         it 'invokes method name in elements, binded at object in argument' do
           expect(process).to receive(:test_method)
-          process_node.execute(process)
+          node.execute(process)
         end
       end
     end
@@ -48,7 +48,7 @@ describe WFlow::ProcessNode do
       context 'when invoked' do
         it 'invokes Proc in elements, binded at object in argument' do
           expect(process).to receive(:test_method)
-          process_node.execute(process)
+          node.execute(process)
         end
       end
     end
@@ -61,7 +61,7 @@ describe WFlow::ProcessNode do
         it 'invokes class instance in elements, passing flow as argument' do
           expect(task_process).to receive(:run_as_task).with(flow)
           expect(process).to receive(:flow)
-          process_node.execute(process)
+          node.execute(process)
         end
       end
     end

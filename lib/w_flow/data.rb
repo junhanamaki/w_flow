@@ -1,7 +1,11 @@
 module WFlow
   class Data
-    def initialize(data)
+    def initialize(data = {})
       @data = data
+
+      unless @data.is_a?(Hash)
+        raise InvalidArgument, 'WFlow::Data must be initialized with nil or Hash'
+      end
     end
 
   protected
