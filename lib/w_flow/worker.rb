@@ -12,11 +12,11 @@ module WFlow
           execute_process(process)
         end
       rescue FlowFailure
-        # TODO: do rollback
+        @for_rollback.each { |process| process.rollback }
       end
 
-      # TODO: do final
-    rescue StandardError => e
+      @for_final.each { |process| process.final }
+    rescue ::StandardError => e
       message = { message: e.message, backtrace: e.backtrace }
       flow.failure!(message, silent: true)
 
@@ -38,22 +38,14 @@ module WFlow
         @for_final << process
 
         process.nodes.each do |node|
-          execute_node(node) if node.execute?(process)
+          node.in_context_of(process) do
+          end
         end
 
         process.perform
 
         @for_rollback << process
       end
-    end
-
-    def execute_node(node)
-      stopped = catch :stop do
-      end
-
-      node.onStop if stopped
-    rescue FlowFailure
-      node.onFlowFailure
     end
   end
 end

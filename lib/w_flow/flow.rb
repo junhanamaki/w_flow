@@ -3,8 +3,8 @@ module WFlow
     attr_reader :data
 
     def initialize(data)
-      @data    = Data.new(data)
-      @failure = { state: false, message: nil }
+      @data = Data.new(data)
+      reset_state
     end
 
     def start(process_class)
@@ -24,6 +24,10 @@ module WFlow
       @failure = { state: true, message: message }
 
       raise FlowFailure unless options[:silent]
+    end
+
+    def reset_state
+      @failure = { state: false, message: nil }
     end
 
     def stop!

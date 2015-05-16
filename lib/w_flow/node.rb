@@ -1,5 +1,7 @@
 module WFlow
   class Node
+    VALID_KEYS = [:if, :unless, :around]
+
     attr_reader :components
 
     def initialize(components, options = {})
@@ -9,29 +11,34 @@ module WFlow
       validate_initialization!
     end
 
-    def execute?(process)
-      allowed_by_if_condition?(process) && allowed_by_unless_condition?(process)
+    def in_context_of(process)
+      return unless execute?(process)
+
+      if @options[:around].nil?
+        yield
+      else
+        process.eval_expression(@options[:around], '')
+        yield
+      end
     end
 
   protected
 
-    def allowed_by_if_condition?(process)
-      @options[:if].nil? || eval_condition(@options[:if], process)
+    def execute?(process)
+      allowed_by_if_option?(process) && allowed_by_unless_option?(process)
     end
 
-    def allowed_by_unless_condition?(process)
-      @options[:unless].nil? || !eval_condition(@options[:unless], process)
+    def allowed_by_if_option?(process)
+      @options[:if].nil? || process.eval_expression(@options[:if])
     end
 
-    def eval_condition(condition, process)
-      ((condition.is_a?(String) || condition.is_a?(Symbol)) &&
-       process.instance_eval(condition.to_s)) ||
-      (condition.is_a?(Proc) && process.instance_eval(&condition))
+    def allowed_by_unless_option?(process)
+      @options[:unless].nil? || !process.eval_expression(@options[:unless])
     end
 
     def validate_initialization!
-      unless @options.keys.all? { |key| [:if, :unless, :around].include?(key) }
-        raise InvalidArgument, INVALID_KEYS
+      unless @options.keys.all? { |k| VALID_KEYS.include?(k) }
+        raise InvalidArgument, INVALID_KEYS.gsub('{keys}', VALID_KEYS.join(', '))
       end
 
       unless @components.length > 0

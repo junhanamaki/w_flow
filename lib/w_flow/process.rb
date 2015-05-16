@@ -11,6 +11,16 @@ module WFlow
     def rollback; end
     def final;    end
 
+    def eval_expression(expression, *args)
+      if expression.is_a?(String) || expression.is_a?(Symbol)
+        instance_eval(expression.to_s, *args)
+      elsif expression.is_a?(Proc)
+        instance_eval(&expression, *args)
+      else
+        raise InvalidArgument, UNKNOWN_EXPRESSION
+      end
+    end
+
     def self.included(klass)
       klass.extend(ClassMethods)
       klass.instance_variable_set('@nodes', [])
