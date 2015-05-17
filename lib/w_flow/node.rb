@@ -1,25 +1,36 @@
 module WFlow
   class Node
-    def initialize(owner_process, flow, components, options = {})
-      @components = components
-      @options    = options
+    def initialize(components, options)
+      @components        = components
+      @if_condition      = options[:if]
+      @unless_condition  = options[:unless]
+      @around            = options[:around]
+      @stop_condition    = options[:stop]
+      @failure_condition = options[:failure]
     end
 
-    def run
+    def run(owner_process, flow)
+      @owner_process = owner_process
+
+      if execute?
+        @components.each do |component|
+          owner_process.wflow_eval(component)
+        end
+      end
     end
 
   protected
 
     def execute?
-      allowed_by_if_option? && allowed_by_unless_option?
+      allowed_by_if_condition? && allowed_by_unless_condition?
     end
 
-    def allowed_by_if_option?
-      @options[:if].nil? || process.expression_eval(@options[:if])
+    def allowed_by_if_condition?
+      @if_condition.nil? || @owner_process.wflow_eval(@if_condition)
     end
 
-    def allowed_by_unless_option?
-      @options[:unless].nil? || !process.expression_eval(@options[:unless])
+    def allowed_by_unless_condition?
+      @unless_condition.nil? || !@owner_process.wflow_eval(@unless_condition)
     end
   end
 end

@@ -13,11 +13,11 @@ module WFlow
       @handlers = {}
 
       unless options[:stop].nil?
-        @handlers[:stop] = Proc.new { wflow_expression_eval(@handlers[:stop]) }
+        @handlers[:stop] = Proc.new { wflow_eval(@handlers[:stop]) }
       end
 
       unless options[:failure].nil?
-        @handlers[:failure] = Proc.new { wflow_expression_eval(@handlers[:failure]) }
+        @handlers[:failure] = Proc.new { wflow_eval(@handlers[:failure]) }
       end
     end
 
@@ -31,18 +31,20 @@ module WFlow
         setup
 
         wflow_node_description.each do |desc|
-          Node.new(self, flow, desc[:components], desc[:options]).run
+          Node.new(desc[:components], desc[:options]).run(self, flow)
         end
 
         perform
       end
     end
 
-    def wflow_expression_eval(expression, *args)
-      if expression.is_a?(String) || expression.is_a?(Symbol)
-        send(expression.to_s, *args)
-      elsif expression.is_a?(Proc)
-        expression.call(*args)
+    def wflow_eval(object, *args)
+      if object.is_a?(String) || object.is_a?(Symbol)
+        send(object.to_s, *args)
+      elsif object.is_a?(Proc)
+        instance_exec(*args, &object)
+      elsif object == Process
+        object.new(flow, *args).wflow_run
       else
         raise InvalidArguments, UNKNOWN_EXPRESSION
       end
