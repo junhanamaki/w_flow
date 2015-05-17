@@ -29,9 +29,7 @@ module WFlow
 
           finalize_processes
         else
-          catch :skip do
-            yield
-          end
+          yield
         end
       end
     rescue ::StandardError => e
