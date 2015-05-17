@@ -1,10 +1,10 @@
 require "w_flow/version"
 require "w_flow/configuration"
 require "w_flow/data"
+require "w_flow/report"
 require "w_flow/flow"
 require "w_flow/node"
 require "w_flow/process"
-require "w_flow/worker"
 
 module WFlow
   # WFlow errors

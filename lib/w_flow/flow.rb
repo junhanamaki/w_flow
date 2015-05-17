@@ -11,12 +11,14 @@ module WFlow
       @report = Report.new
     end
 
-    def supervise_process(process)
-      if initial_
+    def supervise_process(process, on_stop = nil, on_failure = nil)
+      if initial_process?
         in_context_of(process) do
           begin
             catch :stop do
-              yield
+              catch :skip do
+                yield
+              end
             end
           rescue FlowFailure
             # rollback
@@ -26,7 +28,10 @@ module WFlow
         end
       else
         in_context_of(process) do
-
+          stopped = catch :stop
+            skipped = catch :skip do
+            end
+          end
         end
       end
     rescue ::StandardError => e
@@ -53,6 +58,10 @@ module WFlow
     end
 
   protected
+
+    def initial_process?
+      @current_process.nil?
+    end
 
     def in_context_of(process)
       previous_process = @current_process
