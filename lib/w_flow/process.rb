@@ -2,23 +2,13 @@ module WFlow
   module Process
     def self.included(klass)
       klass.extend(ClassMethods)
-      klass.instance_variable_set('@wflow_node_description', [])
+      klass.instance_variable_set('@wflow_node_descriptions', [])
     end
 
     attr_reader :flow
 
-    def initialize(flow, options)
+    def initialize(flow)
       @flow = flow
-
-      @handlers = {}
-
-      unless options[:stop].nil?
-        @handlers[:stop] = Proc.new { wflow_eval(@handlers[:stop]) }
-      end
-
-      unless options[:failure].nil?
-        @handlers[:failure] = Proc.new { wflow_eval(@handlers[:failure]) }
-      end
     end
 
     def setup;    end
@@ -27,11 +17,13 @@ module WFlow
     def finalize; end
 
     def wflow_run
-      flow.supervise(self, @handlers) do
+      flow.supervise_process(self) do
         setup
 
-        wflow_node_description.each do |desc|
-          Node.new(desc[:components], desc[:options]).run(self, flow)
+        wflow_node_descriptions.each do |desc|
+          flow.supervise_node do
+            Node.new(desc[:components], desc[:options]).run(self)
+          end
         end
 
         perform
@@ -53,7 +45,7 @@ module WFlow
   protected
 
     module ClassMethods
-      attr_reader :wflow_node_description
+      attr_reader :wflow_node_descriptions
 
       def data_accessor(*keys)
         data_writer(keys)
@@ -79,7 +71,7 @@ module WFlow
       def execute(*components, &block)
         options = components.last.is_a?(Hash) ? components.pop : {}
         components << block if block_given?
-        wflow_node_description << { components: components, options: options }
+        wflow_node_descriptions << { components: components, options: options }
       end
 
       def run(params = {})

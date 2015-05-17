@@ -14,8 +14,8 @@ module WFlow
       @to_finalize = []
     end
 
-    def supervise(process, handlers)
-      in_context_of(process, handlers) do
+    def supervise_process(process)
+      in_context_of(process) do
         begin
           stopped = catch :stop do
             catch :skip do
@@ -23,9 +23,9 @@ module WFlow
             end
           end
 
-          stop! if stopped && rethrow_stop?
+          stop! if stopped && !main_process?
         rescue FlowFailure
-          raise if reraise_flow_failure?
+          raise unless main_process?
         end
 
         finalize_processes if main_process?
@@ -34,6 +34,10 @@ module WFlow
       @report.register_failure(message: e.message, backtrace: e.backtrace)
 
       raise unless Configuration.supress_errors?
+    end
+
+    def supervise_node(handlers)
+      yield
     end
 
     def failure!(message = nil)
@@ -52,31 +56,18 @@ module WFlow
 
   protected
 
-    def rethrow_stop?
-      !main_process? && current_handler_call(:stop)
-    end
-
-    def reraise_flow_failure?
-      !main_process? && current_handler_call(:failure)
-    end
-
     def main_process?
       @backlog.empty?
     end
 
-    def in_context_of(process, handlers)
-      @backlog << @current_context unless @current_context.nil?
+    def in_context_of(process)
+      @backlog << @current_process unless @current_process.nil?
 
-      @current_context = { process: process, handlers: handlers }
+      @current_process = process
 
       yield
 
-      @current_context = @backlog.pop
-    end
-
-    def current_handler_call(name)
-      !@current_context[:handlers][name].nil? &&
-      @current_context[:handlers][name].call
+      @current_process = @backlog.pop
     end
 
     def rollback_processes
