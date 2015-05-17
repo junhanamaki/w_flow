@@ -1,5 +1,5 @@
 module WFlow
-  module Worker
+  class Worker
     def initialize(flow)
       @flow            = flow
       @for_final       = []
@@ -9,7 +9,7 @@ module WFlow
     def start(process_class)
       begin
         catch :stop do
-          execute_process(process)
+          execute_process(process_class)
         end
       rescue FlowFailure
         @for_rollback.each { |process| process.rollback }
@@ -18,7 +18,7 @@ module WFlow
       @for_final.each { |process| process.final }
     rescue ::StandardError => e
       message = { message: e.message, backtrace: e.backtrace }
-      flow.failure!(message, silent: true)
+      @flow.failure!(message, silent: true)
 
       raise unless Configuration.supress_errors?
     end
@@ -30,7 +30,7 @@ module WFlow
   protected
 
     def execute_process(process_class)
-      change_current_process_to(process_class) do
+      ready_process(process_class) do |process|
         catch :skip do
           process.setup
 
@@ -51,11 +51,11 @@ module WFlow
       end
     end
 
-    def change_current_process_to(process_class)
+    def ready_process(process_class)
       previous_process = @current_process
       @current_process = process_class.new(@flow)
 
-      yield
+      yield(@current_process)
 
       @current_process = previous_process
     end

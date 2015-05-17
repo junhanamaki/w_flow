@@ -1,12 +1,14 @@
 module WFlow
   class Configuration
-    def supress_errors?
-      @supress_errors
-    end
+    attr_reader :supress_errors
 
     class << self
       def config
         yield configuration
+      end
+
+      def supress_errors?
+        configuration.supress_errors
       end
 
       def configuration

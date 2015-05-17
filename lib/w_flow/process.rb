@@ -11,11 +11,23 @@ module WFlow
     def rollback; end
     def final;    end
 
-    def expression_eval(expression, *args)
+    def wflow_run
+      flow.supevise_process(self) do
+        setup
+
+        wflow_node_description.each do |desc|
+          Node.new(self, flow, desc[:components], desc[:options]).run
+        end
+
+        perform
+      end
+    end
+
+    def wflow_expression_eval(expression, *args)
       if expression.is_a?(String) || expression.is_a?(Symbol)
-        instance_eval(expression.to_s, *args)
+        send(expression.to_s, *args)
       elsif expression.is_a?(Proc)
-        instance_exec(*args, &expression)
+        expression.call(*args)
       else
         raise InvalidArgument, UNKNOWN_EXPRESSION
       end
@@ -23,11 +35,11 @@ module WFlow
 
     def self.included(klass)
       klass.extend(ClassMethods)
-      klass.instance_variable_set('@nodes', [])
+      klass.instance_variable_set('@wflow_node_description', [])
     end
 
     module ClassMethods
-      attr_reader :nodes
+      attr_reader :wflow_node_description
 
       def data_accessor(*keys)
         data_writer(keys)
@@ -50,14 +62,16 @@ module WFlow
         end
       end
 
-      def execute(*elements, &block)
-        options = elements.last.is_a?(Hash) ? elements.pop : {}
-        elements << block if block_given?
-        nodes << Node.new(elements, options)
+      def execute(*components, &block)
+        options = components.last.is_a?(Hash) ? components.pop : {}
+        components << block if block_given?
+        wflow_node_description << { components: components, options: options }
       end
 
       def run(params = {})
-        Flow.new(params).start(self)
+        flow = Flow.new(params)
+
+        new(flow).wflow_run
       end
     end
   end

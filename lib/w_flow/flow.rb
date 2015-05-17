@@ -1,33 +1,44 @@
 module WFlow
   class Flow
+    extend Forwardable
+    def_delegators :@report, :success?, :failure?
+    def_delegator  :@report, :failure_message, :message
+
     attr_reader :data
 
     def initialize(data)
-      @data = Data.new(data)
-      reset_state
+      @data   = Data.new(data)
+      @report = Report.new
     end
 
-    def start(process_class)
-      @worker = Worker.new(self)
-      @worker.start(process_class)
+    def supervise_process(process)
+      if initial_
+        in_context_of(process) do
+          begin
+            catch :stop do
+              yield
+            end
+          rescue FlowFailure
+            # rollback
+          end
+
+          # final
+        end
+      else
+        in_context_of(process) do
+
+        end
+      end
+    rescue ::StandardError => e
+      @report.register_failure(message: e.message, backtrace: e.backtrace)
+
+      raise unless Configuration.supress_errors?
     end
 
-    def success?
-      !failure?
-    end
+    def failure!(message = nil)
+      @report.register_failure(message)
 
-    def failure?
-      @failure[:state]
-    end
-
-    def failure!(message = nil, options = {})
-      @failure = { state: true, message: message }
-
-      raise FlowFailure unless !!options[:silent]
-    end
-
-    def reset_state
-      @failure = { state: false, message: nil }
+      raise FlowFailure
     end
 
     def stop!
@@ -38,12 +49,18 @@ module WFlow
       throw :skip, true
     end
 
-    def failure_message
-      @failure[:message]
+    def execute!(component)
     end
 
-    def execute!(component)
-      @worker.execute_component(component)
+  protected
+
+    def in_context_of(process)
+      previous_process = @current_process
+      @current_process = process
+
+      yield
+
+      @current_process = previous_process
     end
   end
 end
