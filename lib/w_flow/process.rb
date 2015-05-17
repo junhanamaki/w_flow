@@ -7,8 +7,18 @@ module WFlow
 
     attr_reader :flow
 
-    def initialize(flow)
+    def initialize(flow, options)
       @flow = flow
+
+      @handlers = {}
+
+      unless options[:stop].nil?
+        @handlers[:stop] = Proc.new { wflow_expression_eval(@handlers[:stop]) }
+      end
+
+      unless options[:failure].nil?
+        @handlers[:failure] = Proc.new { wflow_expression_eval(@handlers[:failure]) }
+      end
     end
 
     def setup;    end
@@ -17,7 +27,7 @@ module WFlow
     def finalize; end
 
     def wflow_run
-      flow.supervise(self) do
+      flow.supervise(self, @handlers) do
         setup
 
         wflow_node_description.each do |desc|
