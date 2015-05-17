@@ -24,9 +24,9 @@ module WFlow
             end
           end
 
-          stop! if !parent_process? && !!stopped && process.on_stop
+          stop! if !parent_process? && !!stopped && process.wflow_on_stop
         rescue FlowFailure
-          raise if !parent_process? && process.on_failure
+          raise if !parent_process? && process.wflow_on_failure
         end
 
         finalize_processes if parent_process?
