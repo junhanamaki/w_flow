@@ -85,7 +85,6 @@ module WFlow
 
     def finalize_processes
       @to_finalize.each(&:finalize)
-      end
     end
   end
 end
