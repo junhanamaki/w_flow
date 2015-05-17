@@ -16,19 +16,23 @@ module WFlow
 
     def supervise_process(process)
       in_context_of(process) do
-        begin
-          stopped = catch :stop do
-            catch :skip do
-              yield
+        if main_process?
+          begin
+            catch :stop do
+              catch :skip do
+                yield
+              end
             end
+          rescue FlowFailure
+            rollback_processes
           end
 
-          stop! if stopped && !main_process?
-        rescue FlowFailure
-          raise unless main_process?
+          finalize_processes
+        else
+          catch :skip do
+            yield
+          end
         end
-
-        finalize_processes if main_process?
       end
     rescue ::StandardError => e
       @report.register_failure(message: e.message, backtrace: e.backtrace)
