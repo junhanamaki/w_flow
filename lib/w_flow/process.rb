@@ -7,9 +7,8 @@ module WFlow
 
     attr_reader :flow
 
-    def initialize(flow, options = {})
-      @flow    = flow
-      @options = options
+    def initialize(flow)
+      @flow = flow
     end
 
     def setup;    end
@@ -27,13 +26,6 @@ module WFlow
 
         perform
       end
-    end
-
-    def wflow_on_stop
-
-    end
-
-    def wflow_on_failure
     end
 
     def wflow_expression_eval(expression, *args)
