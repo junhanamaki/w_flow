@@ -1,5 +1,10 @@
 module WFlow
   module Process
+    def self.included(klass)
+      klass.extend(ClassMethods)
+      klass.instance_variable_set('@wflow_node_description', [])
+    end
+
     attr_reader :flow
 
     def initialize(flow)
@@ -9,10 +14,12 @@ module WFlow
     def setup;    end
     def perform;  end
     def rollback; end
-    def final;    end
+    def finalize; end
 
-    def wflow_run
-      flow.supevise_process(self) do
+    def wflow_run(handlers = {})
+
+
+      flow.supervise(self) do
         setup
 
         wflow_node_description.each do |desc|
@@ -29,14 +36,11 @@ module WFlow
       elsif expression.is_a?(Proc)
         expression.call(*args)
       else
-        raise InvalidArgument, UNKNOWN_EXPRESSION
+        raise InvalidArguments, UNKNOWN_EXPRESSION
       end
     end
 
-    def self.included(klass)
-      klass.extend(ClassMethods)
-      klass.instance_variable_set('@wflow_node_description', [])
-    end
+  protected
 
     module ClassMethods
       attr_reader :wflow_node_description
@@ -69,6 +73,10 @@ module WFlow
       end
 
       def run(params = {})
+        unless params.nil? || params.is_a?(Hash)
+          raise InvalidArgument, INVALID_RUN_PARAMS
+        end
+
         flow = Flow.new(params)
 
         new(flow).wflow_run

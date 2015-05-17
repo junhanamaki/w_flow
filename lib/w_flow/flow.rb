@@ -9,30 +9,27 @@ module WFlow
     def initialize(data)
       @data   = Data.new(data)
       @report = Report.new
+
+      @processes_backlog      = []
+      @processes_for_rollback = []
+      @processes_for_finalize = []
     end
 
-    def supervise_process(process, on_stop = nil, on_failure = nil)
-      if initial_process?
-        in_context_of(process) do
-          begin
-            catch :stop do
-              catch :skip do
-                yield
-              end
+    def supervise(process)
+      in_context_of(process) do
+        begin
+          stopped = catch :stop do
+            catch :skip do
+              yield
             end
-          rescue FlowFailure
-            # rollback
           end
 
-          # final
+          stop! if !!stopped && !parent_process? && process.on_stop
+        rescue FlowFailure
+          raise if !parent_process? && process.on_failure
         end
-      else
-        in_context_of(process) do
-          stopped = catch :stop
-            skipped = catch :skip do
-            end
-          end
-        end
+
+        finalize_processes if parent_process?
       end
     rescue ::StandardError => e
       @report.register_failure(message: e.message, backtrace: e.backtrace)
@@ -54,22 +51,28 @@ module WFlow
       throw :skip, true
     end
 
-    def execute!(component)
-    end
-
   protected
 
-    def initial_process?
-      @current_process.nil?
+    def parent_process?
+      @processes_backlog.empty?
     end
 
     def in_context_of(process)
-      previous_process = @current_process
+      @processes_backlog << @current_process unless @current_process.nil?
       @current_process = process
 
       yield
 
-      @current_process = previous_process
+      @current_process = @processes_backlog.pop
+    end
+
+    def rollback_processes
+      @processes_to_rollback.each(&:rollback)
+    end
+
+    def finalize_processes
+      @processes_to_finalize.each(&:finalize)
+      end
     end
   end
 end
