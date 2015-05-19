@@ -2,13 +2,12 @@ module WFlow
   class Flow
     extend Forwardable
     def_delegators :@report, :success?, :failure?
-    def_delegator  :@report, :failure_message, :message
 
     attr_reader :data
 
     def initialize(data)
       @data    = Data.new(data)
-      @report  = Report.new
+      @report  = Report.new(@data)
       @backlog = []
       @to_rollback = []
       @to_finalize = []
@@ -43,7 +42,7 @@ module WFlow
     end
 
     def failure!(message = nil)
-      @report.register_failure(message)
+      @report.failure!(message)
 
       raise FlowFailure
     end

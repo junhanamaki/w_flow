@@ -1,11 +1,14 @@
 module WFlow
   class Report
-    def initialize
+    attr_reader :data
+
+    def initialize(data)
       @failure = false
       @message = nil
+      @data    = data
     end
 
-    def register_failure(message)
+    def failure!(message)
       @failure = true
       @message = message
     end
