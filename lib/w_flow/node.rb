@@ -11,8 +11,10 @@ module WFlow
 
     def run(owner)
       if execute?(owner)
-        @components.each do |component|
-          owner.wflow_eval(component)
+        if @around.nil?
+          execute_node(owner)
+        else
+          @around.call(Proc.new { execute_node(owner) })
         end
       end
     end
@@ -22,6 +24,12 @@ module WFlow
     def execute?(owner)
       (@if_condition.nil? || owner.wflow_eval(@if_condition)) &&
       (@unless_condition.nil? || !owner.wflow_eval(@unless_condition))
+    end
+
+    def execute_node(owner)
+      @components.each do |component|
+        owner.wflow_eval(component)
+      end
     end
   end
 end
