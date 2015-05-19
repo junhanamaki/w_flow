@@ -2,27 +2,25 @@ module WFlow
   module Process
     def self.included(klass)
       klass.extend(ClassMethods)
-      klass.instance_variable_set('@wflow_node_descriptions', [])
+      klass.instance_variable_set('@wflow_nodes', [])
     end
 
     attr_reader :flow
-
-    def initialize(flow)
-      @flow = flow
-    end
 
     def setup;    end
     def perform;  end
     def rollback; end
     def finalize; end
 
-    def wflow_run
+    def wflow_run(flow)
+      @flow = flow
+
       flow.supervise_process(self) do
         setup
 
-        wflow_node_descriptions.each do |desc|
+        wflow_nodes.each do |node|
           flow.supervise_node do
-            Node.new(desc[:components], desc[:options]).run(self)
+            node.run(self)
           end
         end
 
@@ -45,7 +43,7 @@ module WFlow
   protected
 
     module ClassMethods
-      attr_reader :wflow_node_descriptions
+      attr_reader :wflow_nodes
 
       def data_accessor(*keys)
         data_writer(keys)
@@ -71,7 +69,7 @@ module WFlow
       def execute(*components, &block)
         options = components.last.is_a?(Hash) ? components.pop : {}
         components << block if block_given?
-        wflow_node_descriptions << { components: components, options: options }
+        wflow_nodes << Node.new(components, options)
       end
 
       def run(params = {})
@@ -79,9 +77,7 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        flow = Flow.new(params)
-
-        new(flow).wflow_run
+        new.wflow_run(Flow.new(params))
       end
     end
   end

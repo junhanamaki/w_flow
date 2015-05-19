@@ -9,28 +9,19 @@ module WFlow
       @failure_condition = options[:failure]
     end
 
-    def run(owner_process, flow)
-      @owner_process = owner_process
-
-      if execute?
+    def run(owner)
+      if execute?(owner)
         @components.each do |component|
-          owner_process.wflow_eval(component)
+          owner.wflow_eval(component)
         end
       end
     end
 
   protected
 
-    def execute?
-      allowed_by_if_condition? && allowed_by_unless_condition?
-    end
-
-    def allowed_by_if_condition?
-      @if_condition.nil? || @owner_process.wflow_eval(@if_condition)
-    end
-
-    def allowed_by_unless_condition?
-      @unless_condition.nil? || !@owner_process.wflow_eval(@unless_condition)
+    def execute?(owner)
+      (@if_condition.nil? || owner.wflow_eval(@if_condition)) &&
+      (@unless_condition.nil? || !owner.wflow_eval(@unless_condition))
     end
   end
 end
