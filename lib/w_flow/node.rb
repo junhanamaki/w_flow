@@ -33,5 +33,17 @@ module WFlow
         owner.wflow_eval(component)
       end
     end
+
+    def wflow_eval(process, object, *args)
+      if object.is_a?(String) || object.is_a?(Symbol)
+        process.send(object.to_s, *args)
+      elsif object.is_a?(Proc)
+        process.instance_exec(*args, &object)
+      elsif object == Process
+        object.new.wflow_run(flow, *args)
+      else
+        raise InvalidArguments, UNKNOWN_EXPRESSION
+      end
+    end
   end
 end
