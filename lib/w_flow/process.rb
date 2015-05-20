@@ -12,17 +12,13 @@ module WFlow
     def rollback; end
     def finalize; end
 
-    def wflow_run(flow)
+    def wflow_run(flow, options = {})
       @flow = flow
 
-      flow.supervise_process(self) do
+      flow.supervise(self) do
         setup
 
-        wflow_nodes.each do |node|
-          flow.supervise_node do
-            node.run(self)
-          end
-        end
+        wflow_nodes.each { |node| node.run(self, flow) }
 
         perform
       end
@@ -34,7 +30,7 @@ module WFlow
       elsif object.is_a?(Proc)
         instance_exec(*args, &object)
       elsif object == Process
-        object.new(flow, *args).wflow_run
+        object.new.wflow_run(flow, *args)
       else
         raise InvalidArguments, UNKNOWN_EXPRESSION
       end

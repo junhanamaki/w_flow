@@ -9,12 +9,14 @@ module WFlow
       @failure_condition = options[:failure]
     end
 
-    def run(owner)
+    def run(owner, flow)
       if execute?(owner)
-        if @around.nil?
-          execute_node(owner)
-        else
-          @around.call(Proc.new { execute_node(owner) })
+        flow.supervise(self) do
+          if @around.nil?
+            execute_node(owner)
+          else
+            @around.call(Proc.new { execute_node(owner) })
+          end
         end
       end
     end
