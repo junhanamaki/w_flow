@@ -15,26 +15,26 @@ module WFlow
 
     def supervise(supervisable)
       in_context_of(supervisable) do
-        if main_process?
-          begin
-            catch :stop do
-              catch :skip do
-                yield
-              end
+        begin
+          catch :stop do
+            catch :skip do
+              yield
             end
-          rescue FlowFailure
-            do_rollback
           end
-
-          do_finalize
-        else
-          yield
+        rescue FlowFailure
+          do_rollback
         end
+
+        do_finalize
       end
     rescue ::StandardError => e
       @report.register_failure(message: e.message, backtrace: e.backtrace)
 
       raise unless Configuration.supress_errors?
+    end
+
+    def node_supervise(supervisable)
+
     end
 
     def failure!(message = nil)
@@ -53,8 +53,8 @@ module WFlow
 
   protected
 
-    def main_process?
-      @backlog.empty?
+    def first_supervisable?
+      @backlog.count == 1
     end
 
     def in_context_of(supervisable)

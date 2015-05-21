@@ -13,9 +13,9 @@ module WFlow
       if execute?(owner)
         flow.supervise(self) do
           if @around.nil?
-            execute_node(owner)
+            execute_node(owner, flow)
           else
-            @around.call(Proc.new { execute_node(owner) })
+            @around.call(Proc.new { execute_node(owner, flow) })
           end
         end
       end
@@ -28,13 +28,13 @@ module WFlow
       (@unless_condition.nil? || !owner.wflow_eval(@unless_condition))
     end
 
-    def execute_node(owner)
+    def execute_node(owner, flow)
       @components.each do |component|
-        owner.wflow_eval(component)
+        wflow_eval(owner, component, flow)
       end
     end
 
-    def wflow_eval(process, object, *args)
+    def wflow_eval(process, object, flow, *args)
       if object.is_a?(String) || object.is_a?(Symbol)
         process.send(object.to_s, *args)
       elsif object.is_a?(Proc)
