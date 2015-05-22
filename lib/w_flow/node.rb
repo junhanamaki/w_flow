@@ -1,7 +1,7 @@
 module WFlow
   class Node
     def initialize(components, options)
-      @components        = components
+      @components = components
       @if_condition      = options[:if]
       @unless_condition  = options[:unless]
       @around            = options[:around]
@@ -10,7 +10,10 @@ module WFlow
     end
 
     def run(owner, flow)
-      if execute?(owner)
+      @owner = owner
+      @flow  = flow
+
+      if execute?
         flow.supervise(self) do
           if @around.nil?
             execute_node(owner, flow)
@@ -21,26 +24,32 @@ module WFlow
       end
     end
 
+    def cancel_error?
+
+    end
+
+    def cancel_failure?
+
+    end
+
   protected
 
-    def execute?(owner)
-      (@if_condition.nil? || owner.wflow_eval(@if_condition)) &&
-      (@unless_condition.nil? || !owner.wflow_eval(@unless_condition))
+    def execute?
+      (@if_condition.nil? || node_eval(@if_condition)) &&
+      (@unless_condition.nil? || node_eval(@unless_condition))
     end
 
-    def execute_node(owner, flow)
-      @components.each do |component|
-        wflow_eval(owner, component, flow)
-      end
+    def execute_node
+      @components.each { |component| node_eval(component) }
     end
 
-    def wflow_eval(process, object, flow, *args)
+    def node_eval(object)
       if object.is_a?(String) || object.is_a?(Symbol)
-        process.send(object.to_s, *args)
+        @owner.send(object.to_s, *args)
       elsif object.is_a?(Proc)
-        process.instance_exec(*args, &object)
+        @owner.instance_exec(*args, &object)
       elsif object == Process
-        object.new.wflow_run(flow, *args)
+        object.new.wflow_run(@flow, *args)
       else
         raise InvalidArguments, UNKNOWN_EXPRESSION
       end

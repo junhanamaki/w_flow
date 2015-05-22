@@ -33,10 +33,6 @@ module WFlow
       raise unless Configuration.supress_errors?
     end
 
-    def node_supervise(supervisable)
-
-    end
-
     def failure!(message = nil)
       @report.failure!(message)
 

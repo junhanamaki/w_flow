@@ -18,7 +18,7 @@ module WFlow
       flow.supervise(self) do
         setup
 
-        wflow_nodes.each { |node| node.run(self, flow) }
+        wflow_nodes.each { |node| node.dup.run(self, flow) }
 
         perform
       end
