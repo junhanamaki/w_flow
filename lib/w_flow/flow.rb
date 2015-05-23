@@ -31,6 +31,8 @@ module WFlow
       @report.failure!(message: e.message, backtrace: e.backtrace)
 
       raise unless Configuration.supress_errors?
+    ensure
+      @report
     end
 
     def failure!(message = nil)

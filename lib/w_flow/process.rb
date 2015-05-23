@@ -30,8 +30,8 @@ module WFlow
       attr_reader :wflow_nodes
 
       def data_accessor(*keys)
-        data_writer(keys)
-        data_reader(keys)
+        data_writer(*keys)
+        data_reader(*keys)
       end
 
       def data_writer(*keys)

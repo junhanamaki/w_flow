@@ -4,21 +4,16 @@ require 'process_spec_helper'
 describe 'class that includes WFlow::Process' do
   describe '.data_reader' do
     context "when invoked with attribute names" do
-      let(:mock_class) do
-        Class.new do
-          include WFlow::Process
+      before         { @report = DataReaderTest.run(book: 'book') }
+      let(:instance) { @report.data.instance }
+      let(:flow)     { @report.data.flow }
 
-          data_reader :book
-
-          def perform
-            flow.data.instance = self
-            flow.data.flow     = flow
-          end
-        end
+      it 'creates a method with attribute name' do
+        expect(instance).to respond_to(:book)
       end
-      before { @report = mock_class.run(book: 'book') }
 
-      it "creates a getter with attribute name" do
+      it 'created method returns value in flow.data.<attribute name>' do
+        expect(instance.book).to eq(flow.data.book)
       end
     end
   end
