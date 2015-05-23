@@ -1,7 +1,7 @@
 module WFlow
   class Node
     def initialize(components, options)
-      @components = components
+      @components        = components
       @if_condition      = options[:if]
       @unless_condition  = options[:unless]
       @around            = options[:around]

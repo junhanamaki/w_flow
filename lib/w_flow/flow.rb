@@ -13,13 +13,34 @@ module WFlow
       @to_finalize = []
     end
 
-    def start(process_class)
-      execute_main_process(process_class.new(self))
+    def run(process_class)
+      process = process_class.new(self)
+
+      begin
+        in_context_of(process) do
+          begin
+            catch :stop do
+              catch :skip do
+                execute_process(process)
+              end
+            end
+          rescue FlowFailure
+            do_rollback
+          end
+
+          do_finalize
+        end
+      rescue ::StandardError => e
+        @report.failure!(message: e.message, backtrace: e.backtrace)
+
+        raise unless Configuration.supress_errors?
+      end
 
       @report
     end
 
     def skip!; throw :skip, true; end
+
     def stop!; throw :stop, true; end
 
     def failure!(message = nil)
@@ -31,26 +52,10 @@ module WFlow
   protected
 
     def execute_main_process(process)
-      in_context_of(process) do
-        begin
-          catch :stop do
-            catch :skip do
-              execute_process_flow(process)
-            end
-          end
-        rescue FlowFailure
-          do_rollback
-        end
 
-        do_finalize
-      end
-    rescue ::StandardError => e
-      @report.failure!(message: e.message, backtrace: e.backtrace)
-
-      raise unless Configuration.supress_errors?
     end
 
-    def execute_process_flow(process)
+    def execute_process(process)
       process.setup
 
       process.wflow_nodes.each do |node|
@@ -60,26 +65,22 @@ module WFlow
       process.perform
     end
 
-    def execute_node_flow(node)
+    def execute_node(node)
     end
 
     def in_context_of(supervisable)
-      @backlog     << @currently_supervising unless @currently_supervising.nil?
+      @backlog     << @current_supervisable unless @current_supervisable.nil?
       @to_finalize << supervisable
-      @currently_supervising = supervisable
+      @current_supervisable = supervisable
 
       yield
 
       @to_rollback << supervisable
-      @currently_supervising = @backlog.pop
+      @current_supervisable = @backlog.pop
     end
 
-    def do_rollback
-      @to_rollback.each(&:rollback)
-    end
+    def do_rollback; @to_rollback.each(&:rollback); end
 
-    def do_finalize
-      @to_finalize.each(&:finalize)
-    end
+    def do_finalize; @to_finalize.each(&:finalize); end
   end
 end

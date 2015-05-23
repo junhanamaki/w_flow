@@ -1,35 +1,24 @@
-class AProcess
+class Base
   include WFlow::Process
 
+  attr_reader :execution_order
 end
 
-class BProcess
-  include WFlow::Process
-
-  def setup
-  end
-
-  def perform
-  end
-
-  def final
-  end
+class AProcess < Base
+  def setup;   execution_order << 'a_setup'; end
+  def perform; execution_order << 'a_perform'; end
+  def final;   execution_order << 'a_final'; end
 end
 
-class CProcess
-  include WFlow::Process
+class BProcess < Base
+  def setup;   execution_order << 'b_setup';   end
+  def perform; execution_order << 'b_perform'; end
+  def final;   execution_order << 'b_final';   end
+end
 
-  def setup
-  end
-
+class CProcess < Base
+  def setup;   execution_order << 'c_setup'; end
   execute AProcess
-
-  def perform
-  end
-
-  def final
-  end
-end
-
-class CProcess
+  def perform; execution_order << 'c_perform'; end
+  def final;   execution_order << 'c_final'; end
 end

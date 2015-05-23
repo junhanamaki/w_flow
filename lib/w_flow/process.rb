@@ -3,6 +3,12 @@ module WFlow
     def self.included(klass)
       klass.extend(ClassMethods)
       klass.instance_variable_set('@wflow_nodes', [])
+
+      class << klass
+        def inherited(klass)
+          klass.instance_variable_set('@wflow_nodes', @wflow_nodes.dup)
+        end
+      end
     end
 
     attr_reader :flow
@@ -32,17 +38,13 @@ module WFlow
 
       def data_writer(*keys)
         keys.each do |key|
-          define_method "#{key}=" do |val|
-            flow.data.send("#{key}=", val)
-          end
+          define_method("#{key}=") { |val| flow.data.send("#{key}=", val) }
         end
       end
 
       def data_reader(*keys)
         keys.each do |key|
-          define_method key do
-            flow.data.send(key.to_s)
-          end
+          define_method(key) { flow.data.send(key.to_s) }
         end
       end
 
@@ -57,7 +59,7 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        Flow.new(params).start(self)
+        Flow.new(params).run(self)
       end
     end
   end
