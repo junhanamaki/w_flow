@@ -23,8 +23,6 @@ module WFlow
 
         perform
       end
-
-      flow.report
     end
 
     def setup;    end
@@ -65,7 +63,11 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        new.wflow_run(Flow.new(params))
+        flow = Flow.new(params)
+
+        new.wflow_run(flow)
+
+        flow.report
       end
     end
   end

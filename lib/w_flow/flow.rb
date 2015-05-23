@@ -44,23 +44,6 @@ module WFlow
 
   protected
 
-    def execute_process(process)
-      process.setup
-
-      process.wflow_nodes do |node|
-        if node.execute?
-          in_context_of(node) do
-            execute_node(node)
-          end
-        end
-      end
-
-      process.perform
-    end
-
-    def execute_node(node)
-    end
-
     def in_context_of(supervisable)
       @backlog     << @current_supervisable unless @current_supervisable.nil?
       @to_finalize << supervisable
