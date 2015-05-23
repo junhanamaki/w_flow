@@ -30,11 +30,8 @@ module WFlow
     def cancel_failure?
     end
 
-    def finalize
-    end
-
-    def rollback
-    end
+    def finalize; end
+    def rollback; end
 
   protected
 
