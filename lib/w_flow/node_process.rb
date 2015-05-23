@@ -13,14 +13,15 @@ module WFlow
       @process = process
       @flow    = flow
 
-      if execute?
-
+      unless cancelled?
+        flow.supervise(self) do
+          if around.nil?
+            run_components
+          else
+#            around.call(Proc.new { run_components })
+          end
+        end
       end
-    end
-
-    def execute?
-      (@if_condition.nil? || node_eval(@if_condition)) &&
-      (@unless_condition.nil? || node_eval(@unless_condition))
     end
 
     def cancel_error?
@@ -36,6 +37,16 @@ module WFlow
     end
 
   protected
+
+    def cancelled?
+      (@if_condition.nil? || node_eval(@if_condition)) &&
+      (@unless_condition.nil? || node_eval(@unless_condition))
+    end
+
+    def run_components
+      @components.each do |component|
+      end
+    end
 
     def node_eval(object)
       if object.is_a?(String) || object.is_a?(Symbol)
