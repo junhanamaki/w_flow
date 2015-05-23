@@ -18,7 +18,11 @@ module WFlow
     end
 
     def wflow_nodes
-      self.class.wflow_nodes
+      self.class.wflow_nodes do |node|
+        node_process = node.build_node_process(self)
+
+        yield(node_process) if node_process.execute?
+      end
     end
 
     def setup;    end

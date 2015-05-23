@@ -31,9 +31,9 @@ module WFlow
           do_finalize
         end
       rescue ::StandardError => e
-        @report.failure!(message: e.message, backtrace: e.backtrace)
-
         raise unless Configuration.supress_errors?
+
+        @report.failure!(message: e.message, backtrace: e.backtrace)
       end
 
       @report
@@ -51,15 +51,15 @@ module WFlow
 
   protected
 
-    def execute_main_process(process)
-
-    end
-
     def execute_process(process)
       process.setup
 
-      process.wflow_nodes.each do |node|
-
+      process.wflow_nodes do |node|
+        if node.execute?
+          in_context_of(node) do
+            execute_node(node)
+          end
+        end
       end
 
       process.perform
