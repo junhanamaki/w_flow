@@ -28,7 +28,7 @@ module WFlow
         do_finalize
       end
     rescue ::StandardError => e
-      @report.register_failure(message: e.message, backtrace: e.backtrace)
+      @report.failure!(message: e.message, backtrace: e.backtrace)
 
       raise unless Configuration.supress_errors?
     end
