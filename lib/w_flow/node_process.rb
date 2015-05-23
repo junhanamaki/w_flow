@@ -13,12 +13,12 @@ module WFlow
       @process = process
       @flow    = flow
 
-      unless cancelled?
+      if execute_node?
         flow.supervise(self) do
-          if around.nil?
+          if @around.nil?
             run_components
           else
-#            around.call(Proc.new { run_components })
+            process_eval(@around, Proc.new { run_components })
           end
         end
       end
@@ -38,23 +38,22 @@ module WFlow
 
   protected
 
-    def cancelled?
-      (@if_condition.nil? || node_eval(@if_condition)) &&
-      (@unless_condition.nil? || node_eval(@unless_condition))
+    def execute_node?
+      (@if_condition.nil?     || process_eval(@if_condition)) &&
+      (@unless_condition.nil? || !process_eval(@unless_condition))
     end
 
     def run_components
-      @components.each do |component|
-      end
+      @components.each { |component| process_eval(component) }
     end
 
-    def node_eval(object)
+    def process_eval(object, *args)
       if object.is_a?(String) || object.is_a?(Symbol)
-        @process.send(object.to_s)
+        @process.send(object.to_s, *args)
       elsif object.is_a?(Proc)
-        @process.instance_exec(&object)
+        @process.instance_exec(*args, &object)
       elsif object == Process
-        object.new.wflow_run(@flow)
+        object.new.wflow_run(@flow, *args)
       else
         raise InvalidArguments, UNKNOWN_EXPRESSION
       end
