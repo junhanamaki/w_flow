@@ -1,24 +1,3 @@
-class DataReaderTest
-  include WFlow::Process
-
-  data_reader :book
-
-  def perform
-    flow.data.instance = self
-    flow.data.flow     = flow
-  end
-end
-
-class DataWriterTest
-  include WFlow::Process
-
-  data_writer :book
-
-  def perform
-    self.book = 'book'
-  end
-end
-
 class AProcess
   include WFlow::Process
 

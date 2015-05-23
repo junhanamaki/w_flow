@@ -14,13 +14,28 @@ module WFlow
     end
 
     def start(process_class)
-      process = process_class.new(self)
+      execute_main_process(process_class.new(self))
 
+      @report
+    end
+
+    def skip!; throw :skip, true; end
+    def stop!; throw :stop, true; end
+
+    def failure!(message = nil)
+      @report.failure!(message)
+
+      raise FlowFailure
+    end
+
+  protected
+
+    def execute_main_process(process)
       in_context_of(process) do
         begin
           catch :stop do
             catch :skip do
-              execute_process(process)
+              execute_process_flow(process)
             end
           end
         rescue FlowFailure
@@ -29,33 +44,13 @@ module WFlow
 
         do_finalize
       end
-
-      @report
     rescue ::StandardError => e
       @report.failure!(message: e.message, backtrace: e.backtrace)
 
       raise unless Configuration.supress_errors?
-
-      @report
     end
 
-    def failure!(message = nil)
-      @report.failure!(message)
-
-      raise FlowFailure
-    end
-
-    def stop!
-      throw :stop, true
-    end
-
-    def skip!
-      throw :skip, true
-    end
-
-  protected
-
-    def execute_process(process)
+    def execute_process_flow(process)
       process.setup
 
       process.wflow_nodes.each do |node|
@@ -63,6 +58,9 @@ module WFlow
       end
 
       process.perform
+    end
+
+    def execute_node_flow(node)
     end
 
     def in_context_of(supervisable)
