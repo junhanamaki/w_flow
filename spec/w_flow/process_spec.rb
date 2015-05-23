@@ -13,6 +13,7 @@ describe 'class that includes WFlow::Process' do
       end
 
       it 'created method returns value in flow.data.<attribute name>' do
+        binding.pry
         expect(instance.book).to eq(flow.data.book)
       end
     end

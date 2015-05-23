@@ -5,20 +5,22 @@ module WFlow
 
     attr_reader :data
 
-    def initialize(data)
-      @data    = Data.new(data)
+    def initialize(params)
+      @data    = Data.new(params)
       @report  = Report.new(@data)
       @backlog = []
       @to_rollback = []
       @to_finalize = []
     end
 
-    def supervise(supervisable)
-      in_context_of(supervisable) do
+    def start(process_class)
+      process = process_class.new(self)
+
+      in_context_of(process) do
         begin
           catch :stop do
             catch :skip do
-              yield
+              execute_process(process)
             end
           end
         rescue FlowFailure
@@ -27,11 +29,13 @@ module WFlow
 
         do_finalize
       end
+
+      @report
     rescue ::StandardError => e
       @report.failure!(message: e.message, backtrace: e.backtrace)
 
       raise unless Configuration.supress_errors?
-    ensure
+
       @report
     end
 
@@ -51,18 +55,25 @@ module WFlow
 
   protected
 
-    def first_supervisable?
-      @backlog.count == 1
+    def execute_process(process)
+      process.setup
+
+      process.wflow_nodes.each do |node|
+
+      end
+
+      process.perform
     end
 
     def in_context_of(supervisable)
-      @backlog << @current_supervisable unless @current_supervisable.nil?
-
-      @current_supervisable = supervisable
+      @backlog     << @currently_supervising unless @currently_supervising.nil?
+      @to_finalize << supervisable
+      @currently_supervising = supervisable
 
       yield
 
-      @current_supervisable = @backlog.pop
+      @to_rollback << supervisable
+      @currently_supervising = @backlog.pop
     end
 
     def do_rollback

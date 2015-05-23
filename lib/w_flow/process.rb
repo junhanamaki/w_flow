@@ -7,22 +7,18 @@ module WFlow
 
     attr_reader :flow
 
+    def initialize(flow)
+      @flow = flow
+    end
+
+    def wflow_nodes
+      self.class.wflow_nodes
+    end
+
     def setup;    end
     def perform;  end
     def rollback; end
     def finalize; end
-
-    def wflow_run(flow, options = {})
-      @flow = flow
-
-      flow.supervise(self) do
-        setup
-
-        self.class.wflow_nodes.each { |node| node.dup.run(self, flow) }
-
-        perform
-      end
-    end
 
   protected
 
@@ -37,7 +33,7 @@ module WFlow
       def data_writer(*keys)
         keys.each do |key|
           define_method "#{key}=" do |val|
-            flow.data[key] = val
+            flow.data.send("#{key}=", val)
           end
         end
       end
@@ -45,7 +41,7 @@ module WFlow
       def data_reader(*keys)
         keys.each do |key|
           define_method key do
-            flow.data[key]
+            flow.data.send(key.to_s)
           end
         end
       end
@@ -61,7 +57,7 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        new.wflow_run(Flow.new(params))
+        Flow.new(params).start(self)
       end
     end
   end
