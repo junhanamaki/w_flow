@@ -24,7 +24,7 @@ module WFlow
       end
     end
 
-    def cancel_error?
+    def cancel_stop?
     end
 
     def cancel_failure?
