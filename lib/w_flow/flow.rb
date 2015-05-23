@@ -3,7 +3,7 @@ module WFlow
     extend Forwardable
     def_delegators :@report, :success?, :failure?
 
-    attr_reader :data
+    attr_reader :data, :report
 
     def initialize(params)
       @data    = Data.new(params)
@@ -13,34 +13,27 @@ module WFlow
       @to_finalize = []
     end
 
-    def run(process_class)
-      process = process_class.new(self)
-
-      begin
-        in_context_of(process) do
-          begin
-            catch :stop do
-              catch :skip do
-                execute_process(process)
-              end
+    def supervise(supervisable)
+      in_context_of(supervisable) do
+        begin
+          catch :stop do
+            catch :skip do
+              yield
             end
-          rescue FlowFailure
-            do_rollback
           end
-
-          do_finalize
+        rescue FlowFailure
+          do_rollback
         end
-      rescue ::StandardError => e
-        raise unless Configuration.supress_errors?
 
-        @report.failure!(message: e.message, backtrace: e.backtrace)
+        do_finalize
       end
+    rescue ::StandardError => e
+      raise unless Configuration.supress_errors?
 
-      @report
+      @report.failure!(message: e.message, backtrace: e.backtrace)
     end
 
     def skip!; throw :skip, true; end
-
     def stop!; throw :stop, true; end
 
     def failure!(message = nil)
@@ -80,7 +73,6 @@ module WFlow
     end
 
     def do_rollback; @to_rollback.each(&:rollback); end
-
     def do_finalize; @to_finalize.each(&:finalize); end
   end
 end

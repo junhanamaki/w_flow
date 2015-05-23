@@ -13,16 +13,18 @@ module WFlow
 
     attr_reader :flow
 
-    def initialize(flow)
+    def wflow_run(flow)
       @flow = flow
-    end
 
-    def wflow_nodes
-      self.class.wflow_nodes do |node|
-        node_process = node.build_node_process(self)
+      flow.supervise(self) do
+        setup
 
-        yield(node_process) if node_process.execute?
+        self.class.wflow_nodes.each { |node| node.run(self, flow) }
+
+        perform
       end
+
+      flow.report
     end
 
     def setup;    end
@@ -63,7 +65,7 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        Flow.new(params).run(self)
+        new.wflow_run(Flow.new(params))
       end
     end
   end
