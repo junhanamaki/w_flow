@@ -15,13 +15,6 @@ module WFlow
   class FlowFailure      < StandardError; end
 
   # WFlow message constants
-  INVALID_RUN_PARAMS = "run must be invoked with nil or Hash"
-
+  INVALID_RUN_PARAMS = "run must be invoked without arguments or an Hash"
   UNKNOWN_EXPRESSION = "can't evaluate expression"
-  INVALID_KEYS       = "valid option keys are {keys}"
-  INVALID_COMPONENTS =
-    <<-EOS
-      First argument for WFLow::Node must be an array containing
-      at least one WFlow::Process, String, Symbol or Proc
-    EOS
 end
