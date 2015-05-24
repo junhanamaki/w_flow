@@ -2,13 +2,6 @@ module WFlow
   module Process
     def self.included(klass)
       klass.extend(ClassMethods)
-      klass.instance_variable_set('@wflow_nodes', [])
-
-      class << klass
-        def inherited(klass)
-          klass.instance_variable_set('@wflow_nodes', @wflow_nodes.dup)
-        end
-      end
     end
 
     attr_reader :flow
@@ -36,6 +29,14 @@ module WFlow
 
     module ClassMethods
       attr_reader :wflow_nodes
+
+      def self.extended(klass)
+        klass.instance_variable_set('@wflow_nodes', [])
+      end
+
+      def inherited(klass)
+        klass.instance_variable_set('@wflow_nodes', wflow_nodes.dup)
+      end
 
       def data_accessor(*keys)
         data_writer(*keys)
