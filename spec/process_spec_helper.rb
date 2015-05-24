@@ -34,3 +34,13 @@ class DProcess < Base
   def finalize; execution_order << 'd_finalize'; end
   def rollback; execution_order << 'd_rollback'; end
 end
+
+class EProcess < Base
+  def setup;    execution_order << 'e_setup';    end
+
+  execute AProcess, if: -> { true }
+
+  def perform;  execution_order << 'e_perform';  end
+  def finalize; execution_order << 'e_finalize'; end
+  def rollback; execution_order << 'e_rollback'; end
+end
