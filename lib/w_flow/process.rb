@@ -25,6 +25,9 @@ module WFlow
     def rollback; end
     def finalize; end
 
+    def cancel_stop?;    end
+    def cancel_failure?; end
+
   protected
 
     module ClassMethods

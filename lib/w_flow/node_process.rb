@@ -1,12 +1,12 @@
 module WFlow
   class NodeProcess
     def initialize(components, options)
-      @components        = components
-      @around            = options[:around]
-      @if_condition      = options[:if]
-      @unless_condition  = options[:unless]
-      @stop_condition    = options[:stop]
-      @failure_condition = options[:failure]
+      @components     = components
+      @around_option  = options[:around]
+      @if_option      = options[:if]
+      @unless_option  = options[:unless]
+      @stop_option    = options[:stop]
+      @failure_option = options[:failure]
     end
 
     def execute(supervisor, process)
@@ -15,19 +15,21 @@ module WFlow
 
       if execute_node?
         supervisor.supervising(self) do |flow|
-          if @around.nil?
+          if @around_option.nil?
             execute_components
           else
-            process_eval(@around, Proc.new { execute_components })
+            process_eval(@around_option, Proc.new { execute_components })
           end
         end
       end
     end
 
     def cancel_stop?
+      !@stop_option.nil? && !process_eval(@stop_option)
     end
 
     def cancel_failure?
+      !@failure_option.nil? && !process_eval(@failure_option)
     end
 
     def finalize; end
@@ -36,8 +38,8 @@ module WFlow
   protected
 
     def execute_node?
-      (@if_condition.nil?     || process_eval(@if_condition)) &&
-      (@unless_condition.nil? || !process_eval(@unless_condition))
+      (@if_option.nil?     || process_eval(@if_option)) &&
+      (@unless_option.nil? || !process_eval(@unless_option))
     end
 
     def execute_components
