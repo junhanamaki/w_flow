@@ -65,8 +65,6 @@ class FProcess < Base
   def finalize; execution_order << 'f_finalize'; end
   def rollback; execution_order << 'f_rollback'; end
 
-protected
-
   def unless_option
     execution_order.is_a?(Array)
   end
@@ -113,4 +111,16 @@ class JProcess < Base
   def perform;  execution_order << 'j_perform';  end
   def finalize; execution_order << 'j_finalize'; end
   def rollback; execution_order << 'j_rollback'; end
+end
+
+class KProcess < Base
+  def setup;    execution_order << 'k_setup';    end
+
+  execute -> { execution_order << 'proc' }, :method_name
+
+  def perform;  execution_order << 'k_perform';  end
+  def finalize; execution_order << 'k_finalize'; end
+  def rollback; execution_order << 'k_rollback'; end
+
+  def method_name; execution_order << 'method_name'; end
 end

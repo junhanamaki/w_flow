@@ -290,5 +290,37 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[8]).to eq('j_finalize')
       end
     end
+
+    context 'when invoked on KProcess' do
+      let(:test_class) { KProcess }
+
+      it 'reports success' do
+        expect(@report.success?).to eq(true)
+      end
+
+      it 'returned execution_order has 5 entries' do
+        expect(execution_order.count).to eq(5)
+      end
+
+      it 'executes KProcess#setup first' do
+        expect(execution_order[0]).to eq('k_setup')
+      end
+
+      it 'executes Proc in execute second' do
+        expect(execution_order[1]).to eq('proc')
+      end
+
+      it 'executes method with passed name third' do
+        expect(execution_order[2]).to eq('method_name')
+      end
+
+      it 'executes KProcess#perform fourth' do
+        expect(execution_order[3]).to eq('k_perform')
+      end
+
+      it 'executes KProcess#finalize fifth' do
+        expect(execution_order[4]).to eq('k_finalize')
+      end
+    end
   end
 end
