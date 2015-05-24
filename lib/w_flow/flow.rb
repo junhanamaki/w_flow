@@ -59,16 +59,16 @@ module WFlow
         end
       end
 
-      stop! if stopped == :wflow_stop && !cancel_stop?
+      stop! if stopped == :wflow_stop && rethrow_stop?
     rescue FlowFailure
-      cancel_failure? ? reset_failure_state : raise
+      reraise_failure? ? raise : reset_failure_state
     end
 
-    def cancel_stop?
-      @current_process.cancel_stop?
+    def rethrow_stop?
+      !@current_process.cancel_stop?
     end
 
-    def cancel_failure?
+    def reraise_failure?
       @current_process.cancel_failure?
     end
 
