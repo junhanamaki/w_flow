@@ -104,3 +104,13 @@ class IProcess < Base
   def finalize; execution_order << 'i_finalize'; end
   def rollback; execution_order << 'i_rollback'; end
 end
+
+class JProcess < Base
+  def setup;    execution_order << 'j_setup';    end
+
+  execute AProcess, around: Proc.new { |node| 2.times { node.call } }
+
+  def perform;  execution_order << 'j_perform';  end
+  def finalize; execution_order << 'j_finalize'; end
+  def rollback; execution_order << 'j_rollback'; end
+end

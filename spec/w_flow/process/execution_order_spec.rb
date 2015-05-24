@@ -242,5 +242,53 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[3]).to eq('i_finalize')
       end
     end
+
+    context 'when invoked on JProcess' do
+      let(:test_class) { JProcess }
+
+      it 'reports success' do
+        expect(@report.success?).to eq(true)
+      end
+
+      it 'returned execution_order has 9 entries' do
+        expect(execution_order.count).to eq(9)
+      end
+
+      it 'executes JProcess#setup first' do
+        expect(execution_order[0]).to eq('j_setup')
+      end
+
+      it 'executes AProcess#setup second' do
+        expect(execution_order[1]).to eq('a_setup')
+      end
+
+      it 'executes AProcess#perform third' do
+        expect(execution_order[2]).to eq('a_perform')
+      end
+
+      it 'executes AProcess#setup fourth' do
+        expect(execution_order[3]).to eq('a_setup')
+      end
+
+      it 'executes AProcess#perform fifth' do
+        expect(execution_order[4]).to eq('a_perform')
+      end
+
+      it 'executes JProcess#perform sixth' do
+        expect(execution_order[5]).to eq('j_perform')
+      end
+
+      it 'executes AProcess#finalize seventh' do
+        expect(execution_order[6]).to eq('a_finalize')
+      end
+
+      it 'executes AProcess#finalize eight' do
+        expect(execution_order[7]).to eq('a_finalize')
+      end
+
+      it 'executes JProcess#finalize ninth' do
+        expect(execution_order[8]).to eq('j_finalize')
+      end
+    end
   end
 end
