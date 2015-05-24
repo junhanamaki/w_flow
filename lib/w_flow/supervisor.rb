@@ -13,12 +13,10 @@ module WFlow
       @flow.executing(supervisable) { yield @flow }
 
       @completed_log.unshift(supervisable)
-
-
     end
 
     def report
-      Report.new(@flow.data, @flow.failure?, @flow.message)
+      Report.new(@flow)
     end
   end
 end

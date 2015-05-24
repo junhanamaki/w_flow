@@ -1,14 +1,10 @@
 module WFlow
   class Report
-    attr_reader :data
+    extend Forwardable
+    def_delegators :@flow, :data, :success?, :failure?, :message
 
-    def initialize(data, failure, message)
-      @data    = data
-      @failure = failure
-      @message = message
+    def initialize(flow)
+      @flow = flow
     end
-
-    def success?; !failure?; end
-    def failure?; @failure;  end
   end
 end

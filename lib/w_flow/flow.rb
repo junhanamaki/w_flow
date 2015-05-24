@@ -27,13 +27,8 @@ module WFlow
       failure!(message: e.message, backtrace: e.backtrace) rescue nil
     end
 
-    def success?
-      !failure?
-    end
-
-    def failure?
-      @failure
-    end
+    def success?; !failure?; end
+    def failure?; @failure;  end
 
     def skip!; throw :skip, true; end
     def stop!; throw :stop, true; end
