@@ -14,13 +14,16 @@ module WFlow
     attr_reader :flow
 
     def wflow_execute(flow, supervisor)
-      @flow = flow
+      @flow       = flow
+      @supervisor = supervisor
 
-      supervisor.supervise(self) do
+      supervisor.supervising(self) do
         flow.executing(self) do
           setup
 
-          self.class.wflow_nodes.each { |node| node.run(self, flow) }
+          self.class.wflow_nodes.each do |node|
+            node.execute(flow, supervisor, self)
+          end
 
           perform
         end

@@ -9,16 +9,19 @@ module WFlow
       @failure_condition = options[:failure]
     end
 
-    def run(process, flow)
-      @process = process
-      @flow    = flow
+    def execute(flow, supervisor, process)
+      @flow       = flow
+      @supervisor = supervisor
+      @process    = process
 
       if execute_node?
-        flow.supervise(self) do
-          if @around.nil?
-            run_components
-          else
-            process_eval(@around, Proc.new { run_components })
+        supervisor.supervising(self) do
+          flow.executing(self) do
+            if @around.nil?
+              run_components
+            else
+              process_eval(@around, Proc.new { run_components })
+            end
           end
         end
       end

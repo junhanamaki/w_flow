@@ -7,7 +7,7 @@ module WFlow
       @completed_log = []
     end
 
-    def supervise(supervisable)
+    def supervising(supervisable)
       @executed_log << supervisable
 
       yield
