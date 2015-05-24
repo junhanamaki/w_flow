@@ -29,6 +29,8 @@ class CProcess < Base
     execution_order << 'c_setup'
   end
 
+  execute AProcess
+
   def perform;  execution_order << 'c_perform';  end
   def finalize; execution_order << 'c_finalize'; end
   def rollback; execution_order << 'c_rollback'; end
@@ -76,6 +78,8 @@ class GProcess < Base
     execution_order << 'g_setup'
   end
 
+  execute AProcess
+
   def perform;  execution_order << 'g_perform';  end
   def finalize; execution_order << 'g_finalize'; end
   def rollback; execution_order << 'g_rollback'; end
@@ -89,4 +93,14 @@ class HProcess < Base
   def perform;  execution_order << 'h_perform';  end
   def finalize; execution_order << 'h_finalize'; end
   def rollback; execution_order << 'h_rollback'; end
+end
+
+class IProcess < Base
+  def setup;    execution_order << 'i_setup';    end
+
+  execute GProcess, stop: -> { false }
+
+  def perform;  execution_order << 'i_perform';  end
+  def finalize; execution_order << 'i_finalize'; end
+  def rollback; execution_order << 'i_rollback'; end
 end
