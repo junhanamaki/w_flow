@@ -62,8 +62,12 @@ describe 'class that includes WFlow::Process' do
         expect(@report.success?).to eq(true)
       end
 
-      it 'returned execution_order has 0 entries' do
-        #expect(execution_order.count).to eq(0)
+      it 'returned execution_order has 1 entry' do
+        expect(execution_order.count).to eq(1)
+      end
+
+      it 'executes finalize first' do
+        expect(execution_order[0]).to eq('c_finalize')
       end
     end
   end

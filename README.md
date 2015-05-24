@@ -8,8 +8,8 @@
 
 Word of appreciation for [usecasing](https://github.com/tdantas/usecasing),
 [interactor](https://github.com/collectiveidea/interactor) and
-[rest_my_case](https://github.com/goncalvesjoao/rest_my_case), that served as
-inspiration.
+[rest_my_case](https://github.com/goncalvesjoao/rest_my_case) that served as
+inspiration for this gem.
 
 ## Dependencies
 
