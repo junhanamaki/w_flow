@@ -38,7 +38,7 @@ end
 class EProcess < Base
   def setup;    execution_order << 'e_setup';    end
 
-  execute AProcess, if: -> { true }
+  execute AProcess, if: -> { execution_order.is_a?(Array) }
 
   def perform;  execution_order << 'e_perform';  end
   def finalize; execution_order << 'e_finalize'; end
