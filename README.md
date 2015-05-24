@@ -6,6 +6,11 @@
 [![Test Coverage](https://codeclimate.com/github/junhanamaki/w_flow/coverage.png)](https://codeclimate.com/github/junhanamaki/w_flow)
 [![Dependency Status](https://gemnasium.com/junhanamaki/w_flow.svg)](https://gemnasium.com/junhanamaki/w_flow)
 
+Word of appreciation for [usecasing](https://github.com/tdantas/usecasing),
+[interactor](https://github.com/collectiveidea/interactor) and
+[rest_my_case](https://github.com/goncalvesjoao/rest_my_case), that served as
+inspiration.
+
 ## Dependencies
 
 Tested with:
@@ -34,7 +39,7 @@ TODO: Write usage instructions here
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/w_flow/fork )
+1. Fork it ( https://github.com/junhanamaki/w_flow/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

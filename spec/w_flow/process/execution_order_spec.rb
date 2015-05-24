@@ -54,5 +54,17 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[2]).to eq('b_finalize')
       end
     end
+
+    context 'when invoked on CProcess' do
+      let(:test_class) { CProcess }
+
+      it 'reports success' do
+        expect(@report.success?).to eq(true)
+      end
+
+      it 'returned execution_order has 0 entries' do
+        #expect(execution_order.count).to eq(0)
+      end
+    end
   end
 end
