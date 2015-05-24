@@ -44,3 +44,19 @@ class EProcess < Base
   def finalize; execution_order << 'e_finalize'; end
   def rollback; execution_order << 'e_rollback'; end
 end
+
+class FProcess < Base
+  def setup;    execution_order << 'f_setup';    end
+
+  execute AProcess, unless: :unless_option
+
+  def perform;  execution_order << 'f_perform';  end
+  def finalize; execution_order << 'f_finalize'; end
+  def rollback; execution_order << 'f_rollback'; end
+
+protected
+
+  def unless_option
+    execution_order.is_a?(Array)
+  end
+end
