@@ -13,13 +13,22 @@ end
 
 class BProcess < Base
   def setup;    execution_order << 'b_setup';    end
-  def perform;  flow.failure!;  end
+
+  def perform
+    flow.failure!
+    execution_order << 'b_perform'
+  end
+
   def finalize; execution_order << 'b_finalize'; end
   def rollback; execution_order << 'b_rollback'; end
 end
 
 class CProcess < Base
-  def setup;    flow.skip!;    end
+  def setup
+    flow.skip!
+    execution_order << 'c_setup'
+  end
+
   def perform;  execution_order << 'c_perform';  end
   def finalize; execution_order << 'c_finalize'; end
   def rollback; execution_order << 'c_rollback'; end
@@ -59,4 +68,15 @@ protected
   def unless_option
     execution_order.is_a?(Array)
   end
+end
+
+class GProcess < Base
+  def setup
+    flow.stop!
+    execution_order << 'g_setup'
+  end
+
+  def perform;  execution_order << 'g_perform';  end
+  def finalize; execution_order << 'g_finalize'; end
+  def rollback; execution_order << 'g_rollback'; end
 end

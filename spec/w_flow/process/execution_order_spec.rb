@@ -166,5 +166,21 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[2]).to eq('f_finalize')
       end
     end
+
+    context 'when invoked on GProcess' do
+      let(:test_class) { GProcess }
+
+      it 'reports success' do
+        expect(@report.success?).to eq(true)
+      end
+
+      it 'returned execution_order has 1 entries' do
+        expect(execution_order.count).to eq(1)
+      end
+
+      it 'executes GProcess#finalize first' do
+        expect(execution_order[0]).to eq('g_finalize')
+      end
+    end
   end
 end
