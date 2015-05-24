@@ -2,8 +2,8 @@ module WFlow
   class Flow
     attr_reader :data, :message
 
-    def initialize(data)
-      @data    = data
+    def initialize(params)
+      @data    = Data.new(params)
       @failure = false
       @message = nil
       @backlog = []
@@ -26,6 +26,8 @@ module WFlow
 
       failure!(message: e.message, backtrace: e.backtrace) rescue nil
     end
+
+    def terminated?; @backlog.empty?; end
 
     def success?; !failure?; end
     def failure?; @failure;  end

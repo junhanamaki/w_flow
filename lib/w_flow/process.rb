@@ -14,8 +14,6 @@ module WFlow
     attr_reader :flow
 
     def wflow_execute(supervisor)
-      @supervisor = supervisor
-
       supervisor.supervising(self) do |flow|
         @flow = flow
 

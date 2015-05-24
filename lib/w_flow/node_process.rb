@@ -16,9 +16,9 @@ module WFlow
       if execute_node?
         supervisor.supervising(self) do |flow|
           if @around.nil?
-            run_components
+            execute_components
           else
-            process_eval(@around, Proc.new { run_components })
+            process_eval(@around, Proc.new { execute_components })
           end
         end
       end
@@ -40,7 +40,7 @@ module WFlow
       (@unless_condition.nil? || !process_eval(@unless_condition))
     end
 
-    def run_components
+    def execute_components
       @components.each { |component| process_eval(component) }
     end
 
