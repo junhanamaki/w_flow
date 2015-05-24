@@ -182,5 +182,37 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[0]).to eq('g_finalize')
       end
     end
+
+    context 'when invoked on HProcess' do
+      let(:test_class) { HProcess }
+
+      it 'reports success' do
+        expect(@report.success?).to eq(true)
+      end
+
+      it 'returned execution_order has 5 entries' do
+        expect(execution_order.count).to eq(5)
+      end
+
+      it 'executes HProcess#setup first' do
+        expect(execution_order[0]).to eq('h_setup')
+      end
+
+      it 'executes BProcess#setup second' do
+        expect(execution_order[1]).to eq('b_setup')
+      end
+
+      it 'executes HProcess#perform third' do
+        expect(execution_order[2]).to eq('h_perform')
+      end
+
+      it 'executes BProcess#finalize third' do
+        expect(execution_order[3]).to eq('b_finalize')
+      end
+
+      it 'executes HProcess#finalize third' do
+        expect(execution_order[4]).to eq('h_finalize')
+      end
+    end
   end
 end

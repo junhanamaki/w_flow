@@ -80,3 +80,13 @@ class GProcess < Base
   def finalize; execution_order << 'g_finalize'; end
   def rollback; execution_order << 'g_rollback'; end
 end
+
+class HProcess < Base
+  def setup;    execution_order << 'h_setup';    end
+
+  execute BProcess, failure: -> { false }
+
+  def perform;  execution_order << 'h_perform';  end
+  def finalize; execution_order << 'h_finalize'; end
+  def rollback; execution_order << 'h_rollback'; end
+end

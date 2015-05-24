@@ -4,9 +4,8 @@ module WFlow
 
     def initialize(params)
       @data    = Data.new(params)
-      @failure = false
-      @message = nil
       @backlog = []
+      reset_failure_state
     end
 
     def executing(process, &block)
@@ -62,7 +61,7 @@ module WFlow
 
       stop! if stopped == :wflow_stop && !cancel_stop?
     rescue FlowFailure
-      raise unless cancel_failure?
+      cancel_failure? ? reset_failure_state : raise
     end
 
     def cancel_stop?
@@ -71,6 +70,11 @@ module WFlow
 
     def cancel_failure?
       @current_process.cancel_failure?
+    end
+
+    def reset_failure_state
+      @failure = false
+      @message = nil
     end
 
     def in_context_of(process)
