@@ -1,18 +1,16 @@
 module WFlow
   class Flow
-    extend Forwardable
-    def_delegators :@report, :success?, :failure?
+    attr_reader :data, :message
 
-    attr_reader :data, :report
-
-    def initialize(params)
-      @data    = Data.new(params)
-      @report  = Report.new(@data)
+    def initialize(data)
+      @data    = data
+      @failure = false
+      @message = nil
       @backlog = []
     end
 
-    def executing(supervisable)
-      in_context_of(supervisable) do
+    def executing(executable)
+      in_context_of(executable) do
         begin
           catch :stop do
             catch :skip do
@@ -26,27 +24,36 @@ module WFlow
     rescue ::StandardError => e
       raise unless Configuration.supress_errors?
 
-      @report.failure!(message: e.message, backtrace: e.backtrace)
+      failure!(message: e.message, backtrace: e.backtrace) rescue nil
+    end
+
+    def success?
+      !failure?
+    end
+
+    def failure?
+      @failure
     end
 
     def skip!; throw :skip, true; end
     def stop!; throw :stop, true; end
 
     def failure!(message = nil)
-      @report.failure!(message)
+      @failure = true
+      @message = message
 
       raise FlowFailure
     end
 
   protected
 
-    def in_context_of(supervisable)
-      @backlog     << @current_supervisable unless @current_supervisable.nil?
-      @current_supervisable = supervisable
+    def in_context_of(executable)
+      @backlog << @current_executable unless @current_executable.nil?
+      @current_executable = executable
 
       yield
 
-      @current_supervisable = @backlog.pop
+      @current_executable = @backlog.pop
     end
   end
 end

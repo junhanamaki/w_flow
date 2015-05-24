@@ -1,8 +1,8 @@
 module WFlow
   class Supervisor
-    attr_reader :executed_log, :completed_log
-
-    def initialize
+    def initialize(params)
+      @data = Data.new(params)
+      @flow = Flow.new(@data)
       @executed_log  = []
       @completed_log = []
     end
@@ -10,17 +10,15 @@ module WFlow
     def supervising(supervisable)
       @executed_log << supervisable
 
-      yield
+      @flow.executing(supervisable) { yield @flow }
 
       @completed_log.unshift(supervisable)
+
+
     end
 
-    def rollback_all
-      @completed_log.each { |completed| completed.rollback }
-    end
-
-    def finalize_all
-      @executed_log.each { |executed| executed.finalize }
+    def report
+      Report.new(@flow.data, @flow.failure?, @flow.message)
     end
   end
 end

@@ -5,10 +5,10 @@ module WFlow
       @options    = options
     end
 
-    def execute(flow, supervisor, process)
+    def execute(supervisor, process)
       node_process = NodeProcess.new(@components, @options)
 
-      node_process.execute(flow, supervisor, process)
+      node_process.execute(supervisor, process)
     end
   end
 end

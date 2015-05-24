@@ -13,20 +13,19 @@ module WFlow
 
     attr_reader :flow
 
-    def wflow_execute(flow, supervisor)
-      @flow       = flow
+    def wflow_execute(supervisor)
       @supervisor = supervisor
 
-      supervisor.supervising(self) do
-        flow.executing(self) do
-          setup
+      supervisor.supervising(self) do |flow|
+        @flow = flow
 
-          self.class.wflow_nodes.each do |node|
-            node.execute(flow, supervisor, self)
-          end
+        setup
 
-          perform
+        self.class.wflow_nodes.each do |node|
+          node.execute(supervisor, self)
         end
+
+        perform
       end
     end
 
@@ -68,15 +67,11 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        flow       = Flow.new(params)
-        supervisor = Supervisor.new
+        supervisor = Supervisor.new(params)
 
-        new.wflow_execute(flow, supervisor)
+        new.wflow_execute(supervisor)
 
-        supervisor.rollback_all if flow.failure?
-        supervisor.finalize_all
-
-        flow.report
+        supervisor.report
       end
     end
   end
