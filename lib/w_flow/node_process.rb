@@ -51,8 +51,8 @@ module WFlow
         @process.send(object.to_s, *args)
       elsif object.is_a?(Proc)
         @process.instance_exec(*args, &object)
-      elsif object == Process
-        object.new.wflow_run(@supervisor, *args)
+      elsif object <= Process
+        object.new.wflow_execute(@supervisor, *args)
       else
         raise InvalidArguments, UNKNOWN_EXPRESSION
       end

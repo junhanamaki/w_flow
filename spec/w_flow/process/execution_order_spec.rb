@@ -70,5 +70,41 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[0]).to eq('c_finalize')
       end
     end
+
+    context 'when invoked on DProcess' do
+      let(:test_class) { DProcess }
+
+      it 'reports success' do
+        expect(@report.success?).to eq(true)
+      end
+
+      it 'returned execution_order has 6 entries', :t do
+        expect(execution_order.count).to eq(6)
+      end
+
+      it 'executes DProcess#setup first' do
+        expect(execution_order[0]).to eq('d_setup')
+      end
+
+      it 'executes AProcess#setup second' do
+        expect(execution_order[1]).to eq('a_setup')
+      end
+
+      it 'executes AProcess#perform third' do
+        expect(execution_order[2]).to eq('a_perform')
+      end
+
+      it 'executes DProcess#perform fourth' do
+        expect(execution_order[3]).to eq('d_perform')
+      end
+
+      it 'executes AProcess#Finalize fifth' do
+        expect(execution_order[4]).to eq('a_finalize')
+      end
+
+      it 'executes DProcess#Finalize last' do
+        expect(execution_order[5]).to eq('d_finalize')
+      end
+    end
   end
 end
