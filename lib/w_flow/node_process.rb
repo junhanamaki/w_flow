@@ -18,7 +18,7 @@ module WFlow
           if @around_option.nil?
             execute_components
           else
-            process_eval(@around_option, Proc.new { execute_components })
+            process_eval(@around_option, method(:execute_components))
           end
         end
       end
