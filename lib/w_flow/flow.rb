@@ -24,8 +24,8 @@ module WFlow
     def success?; !failure?; end
     def failure?; @failure;  end
 
-    def skip!; throw :skip, true; end
-    def stop!; throw :stop, true; end
+    def skip!; throw :skip, :wflow_skip; end
+    def stop!; throw :stop, :wflow_stop; end
 
     def failure!(message = nil)
       @failure = true
@@ -60,7 +60,7 @@ module WFlow
         end
       end
 
-      stop! if stopped && !cancel_stop?
+      stop! if stopped == :wflow_stop && !cancel_stop?
     rescue FlowFailure
       raise unless cancel_failure?
     end
@@ -78,7 +78,7 @@ module WFlow
       @current_process = process
 
       yield
-
+    ensure
       @current_process = @backlog.pop
     end
   end

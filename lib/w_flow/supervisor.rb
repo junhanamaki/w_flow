@@ -7,7 +7,7 @@ module WFlow
     end
 
     def supervising(process)
-      @executed_processes << process
+      @executed_processes.unshift(process)
 
       @flow.executing(process) { yield @flow }
 
