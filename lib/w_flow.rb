@@ -5,6 +5,7 @@ require "w_flow/report"
 require "w_flow/flow"
 require "w_flow/node_process"
 require "w_flow/node"
+require "w_flow/supervisor"
 require "w_flow/process"
 
 module WFlow

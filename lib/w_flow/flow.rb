@@ -9,11 +9,9 @@ module WFlow
       @data    = Data.new(params)
       @report  = Report.new(@data)
       @backlog = []
-      @to_rollback = []
-      @to_finalize = []
     end
 
-    def supervise(supervisable)
+    def executing(supervisable)
       in_context_of(supervisable) do
         begin
           catch :stop do
@@ -22,10 +20,8 @@ module WFlow
             end
           end
         rescue FlowFailure
-          do_rollback
         end
 
-        do_finalize
       end
     rescue ::StandardError => e
       raise unless Configuration.supress_errors?
@@ -46,16 +42,11 @@ module WFlow
 
     def in_context_of(supervisable)
       @backlog     << @current_supervisable unless @current_supervisable.nil?
-      @to_finalize << supervisable
       @current_supervisable = supervisable
 
       yield
 
-      @to_rollback << supervisable
       @current_supervisable = @backlog.pop
     end
-
-    def do_rollback; @to_rollback.each(&:rollback); end
-    def do_finalize; @to_finalize.each(&:finalize); end
   end
 end
