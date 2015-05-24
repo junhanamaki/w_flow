@@ -62,7 +62,7 @@ module WFlow
 
       stop! if stopped && !cancel_stop?
     rescue FlowFailure
-      raise if !cancel_failure?
+      raise unless cancel_failure?
     end
 
     def cancel_stop?
