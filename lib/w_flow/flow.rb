@@ -10,7 +10,7 @@ module WFlow
 
     def executing(process, &block)
       in_context_of(process) do
-        if parent_process_context?
+        if parent_process?
           executing_parent_process(&block)
         else
           executing_child_process(&block)
@@ -35,7 +35,7 @@ module WFlow
 
   protected
 
-    def parent_process_context?
+    def parent_process?
       @backlog.empty?
     end
 
