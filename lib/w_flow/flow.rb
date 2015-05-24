@@ -69,7 +69,7 @@ module WFlow
     end
 
     def reraise_failure?
-      @current_process.cancel_failure?
+      !@current_process.cancel_failure?
     end
 
     def reset_failure_state
