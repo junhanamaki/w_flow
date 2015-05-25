@@ -124,3 +124,17 @@ class KProcess < Base
 
   def method_name; execution_order << 'method_name'; end
 end
+
+class LProcess < Base
+  def setup;    execution_order << 'l_setup';    end
+
+  execute KProcess, unless: -> { true }
+
+  execute AProcess, CProcess, BProcess, failure: -> { false }
+
+  execute -> { execution_order << 'proc' }, around: Proc.new { |n| 2.times { n.call } }
+
+  def perform;  execution_order << 'l_perform';  end
+  def finalize; execution_order << 'l_finalize'; end
+  def rollback; execution_order << 'l_rollback'; end
+end

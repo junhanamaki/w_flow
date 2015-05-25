@@ -322,5 +322,45 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[4]).to eq('k_finalize')
       end
     end
+
+    context 'when invoked on LProcess' do
+      let(:test_class) { LProcess }
+
+      it 'reports success' do
+        expect(@report.success?).to eq(true)
+      end
+
+      it 'returned execution_order has 11 entries' do
+        expect(execution_order.count).to eq(11)
+      end
+
+      it 'executes LProcess#setup first' do
+        expect(execution_order[0]).to eq('l_setup')
+      end
+
+      it 'executes AProcess#setup second' do
+        expect(execution_order[1]).to eq('a_setup')
+      end
+
+      it 'executes AProcess#perform third' do
+        expect(execution_order[2]).to eq('a_perform')
+      end
+
+      it 'executes BProcess#setup fourth' do
+        expect(execution_order[3]).to eq('b_setup')
+      end
+
+      it 'executes procedure in LProcess fifth' do
+        expect(execution_order[4]).to eq('proc')
+      end
+
+      it 'executes procedure in LProcess sixth' do
+        expect(execution_order[5]).to eq('proc')
+      end
+
+      it 'executes LProcess#perform seventh' do
+        expect(execution_order[6]).to eq('l_perform')
+      end
+    end
   end
 end
