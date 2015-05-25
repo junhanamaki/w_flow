@@ -6,17 +6,21 @@ module WFlow
 
     attr_reader :flow
 
-    def wflow_execute(supervisor)
-      supervisor.supervising(self) do |flow|
-        @flow = flow
+    def wflow_execute(flow)
+      @flow = flow
 
+      flow.supervise(self) do |supervisor|
         setup
 
+        supervisor.mark_as_finalizable
+
         self.class.wflow_nodes.each do |node|
-          node.execute(supervisor, self)
+          node.execute(flow, self)
         end
 
         perform
+
+        supervisor.mark_as_rollbackable
       end
     end
 
@@ -24,9 +28,6 @@ module WFlow
     def perform;  end
     def rollback; end
     def finalize; end
-
-    def cancel_stop?;    false; end
-    def cancel_failure?; false; end
 
   protected
 
@@ -69,11 +70,11 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        supervisor = Supervisor.new(params)
+        flow = Flow.new(params)
 
-        new.wflow_execute(supervisor)
+        new.wflow_execute(flow)
 
-        supervisor.report
+        Report.new(flow)
       end
     end
   end

@@ -3,46 +3,53 @@ module WFlow
     attr_reader :data, :message
 
     def initialize(params)
+      @flow_supervisor = FlowSupervisor.new(self)
       @data    = Data.new(params)
       @backlog = []
-      reset_failure_state
+      @failure = false
+      @message = []
     end
 
-    def executing(process, &block)
-      in_context_of(process) do
-        if parent_process?
-          executing_parent_process(&block)
+    def supervise(process, &block)
+      @flow_supervisor.supervise(process) do
+        if @flow_supervisor.parent_process?
+          execute_parent_process(&block)
+          finalize_processes
         else
-          executing_child_process(&block)
+          execute_child_process(&block)
         end
       end
     end
 
-    def terminated?; @current_process.nil?; end
+    def success?
+      !failure?
+    end
 
-    def success?; !failure?; end
-    def failure?; @failure;  end
+    def failure?
+      @failure
+    end
 
-    def skip!; throw :skip, :wflow_skip; end
-    def stop!; throw :stop, :wflow_stop; end
+    def skip!
+      throw :skip, :wflow_skip
+    end
+
+    def stop!
+      throw :stop, :wflow_stop
+    end
 
     def failure!(message = nil)
       @failure = true
-      @message = message
+      @message << message
 
       raise FlowFailure
     end
 
   protected
 
-    def parent_process?
-      @backlog.empty?
-    end
-
-    def executing_parent_process
+    def execute_parent_process
       catch :stop do
         catch :skip do
-          yield
+          yield @flow_supervisor
         end
       end
     rescue FlowFailure
@@ -52,38 +59,22 @@ module WFlow
       failure!(message: e.message, backtrace: e.backtrace) rescue nil
     end
 
-    def executing_child_process
+    def execute_child_process
       stopped = catch :stop do
         catch :skip do
-          yield
+          yield @flow_supervisor
         end
       end
 
-      stop! if stopped == :wflow_stop && rethrow_stop?
+      stop! if stopped == :wflow_stop && @flow_supervisor.rethrow_stop?
     rescue FlowFailure
-      reraise_failure? ? raise : reset_failure_state
+      @flow_supervisor.reraise_error? ? raise : @failure = false
     end
 
-    def rethrow_stop?
-      !@current_process.cancel_stop?
-    end
+    def finalize_processes
+      @flow_supervisor.do_rollbacks if failure?
 
-    def reraise_failure?
-      !@current_process.cancel_failure?
-    end
-
-    def reset_failure_state
-      @failure = false
-      @message = nil
-    end
-
-    def in_context_of(process)
-      @backlog << @current_process unless @current_process.nil?
-      @current_process = process
-
-      yield
-    ensure
-      @current_process = @backlog.pop
+      @flow_supervisor.do_finalizations
     end
   end
 end

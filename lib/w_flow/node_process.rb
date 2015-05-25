@@ -9,12 +9,12 @@ module WFlow
       @failure_option = options[:failure]
     end
 
-    def execute(supervisor, process)
-      @supervisor = supervisor
-      @process    = process
+    def execute(flow, process)
+      @flow    = flow
+      @process = process
 
       if execute_node?
-        supervisor.supervising(self) do |flow|
+        flow.supervise(self) do
           if @around_option.nil?
             execute_components
           else
@@ -31,9 +31,6 @@ module WFlow
     def cancel_failure?
       !@failure_option.nil? && !process_eval(@failure_option)
     end
-
-    def finalize; end
-    def rollback; end
 
   protected
 
@@ -52,7 +49,7 @@ module WFlow
       elsif object.is_a?(Proc)
         @process.instance_exec(*args, &object)
       elsif object <= Process
-        object.new.wflow_execute(@supervisor, *args)
+        object.new.wflow_execute(@flow, *args)
       else
         raise InvalidArguments, UNKNOWN_EXPRESSION
       end

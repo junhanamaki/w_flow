@@ -358,7 +358,7 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[5]).to eq('proc')
       end
 
-      it 'executes LProcess#perform seventh' do
+      it 'executes LProcess#perform seventh', :t do
         expect(execution_order[6]).to eq('l_perform')
       end
     end

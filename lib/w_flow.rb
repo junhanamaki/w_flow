@@ -2,10 +2,10 @@ require "w_flow/version"
 require "w_flow/configuration"
 require "w_flow/data"
 require "w_flow/report"
+require "w_flow/flow_supervisor"
 require "w_flow/flow"
 require "w_flow/node_process"
 require "w_flow/node"
-require "w_flow/supervisor"
 require "w_flow/process"
 
 module WFlow
