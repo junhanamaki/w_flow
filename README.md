@@ -6,6 +6,11 @@
 [![Test Coverage](https://codeclimate.com/github/junhanamaki/w_flow/coverage.png)](https://codeclimate.com/github/junhanamaki/w_flow)
 [![Dependency Status](https://gemnasium.com/junhanamaki/w_flow.svg)](https://gemnasium.com/junhanamaki/w_flow)
 
+WFlow aims to help on designing workflows based on [Single
+Responsibility Principle](http://en.wikipedia.org/wiki/Single_responsibility_principle). WFlow
+proposes to achieve this by providing tools to build classes where each are responsible for a task
+and one task only, and by providing tools to compose these classes.
+
 Word of appreciation for [usecasing](https://github.com/tdantas/usecasing),
 [interactor](https://github.com/collectiveidea/interactor) and
 [rest_my_case](https://github.com/goncalvesjoao/rest_my_case) that served as
@@ -35,7 +40,25 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+On its most simplest form a task (in WFlow called a Process) is something like this:
+
+```ruby
+class SaveUser
+  include WFlow::Process
+
+  def perform
+    # arguments passed to run will be under flow.data
+    flow.data.user.save
+  end
+end
+
+# run process, it will return a report object
+report = SaveUser.run(user: current_user)
+
+report.data.success?
+```
+
+
 
 ## Contributing
 
