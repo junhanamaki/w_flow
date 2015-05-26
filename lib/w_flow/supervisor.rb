@@ -27,7 +27,7 @@ module WFlow
     end
 
     def add_to_finalizables
-      @finalizables << @current_process
+      @finalizables.unshift(@current_process)
     end
 
     def add_to_rollbackables

@@ -90,12 +90,12 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[3]).to eq('d_perform')
       end
 
-      it 'executes DProcess#Finalize fifth' do
-        expect(execution_order[4]).to eq('d_finalize')
+      it 'executes AProcess#Finalize fifth' do
+        expect(execution_order[4]).to eq('a_finalize')
       end
 
-      it 'executes AProcess#Finalize last' do
-        expect(execution_order[5]).to eq('a_finalize')
+      it 'executes DProcess#Finalize last' do
+        expect(execution_order[5]).to eq('d_finalize')
       end
     end
 
@@ -126,12 +126,12 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[3]).to eq('e_perform')
       end
 
-      it 'executes EProcess#Finalize fifth' do
-        expect(execution_order[4]).to eq('e_finalize')
+      it 'executes AProcess#Finalize fifth' do
+        expect(execution_order[4]).to eq('a_finalize')
       end
 
-      it 'executes AProcess#Finalize last' do
-        expect(execution_order[5]).to eq('a_finalize')
+      it 'executes EProcess#Finalize last' do
+        expect(execution_order[5]).to eq('e_finalize')
       end
     end
 
@@ -194,12 +194,12 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[2]).to eq('h_perform')
       end
 
-      it 'executes HProcess#finalize fourth' do
-        expect(execution_order[3]).to eq('h_finalize')
+      it 'executes BProcess#finalize fourth' do
+        expect(execution_order[3]).to eq('b_finalize')
       end
 
-      it 'executes BProcess#finalize fifth' do
-        expect(execution_order[4]).to eq('b_finalize')
+      it 'executes HProcess#finalize fifth' do
+        expect(execution_order[4]).to eq('h_finalize')
       end
     end
 
@@ -262,16 +262,16 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[5]).to eq('j_perform')
       end
 
-      it 'executes JProcess#finalize seventh' do
-        expect(execution_order[6]).to eq('j_finalize')
+      it 'executes AProcess#finalize seventh' do
+        expect(execution_order[6]).to eq('a_finalize')
       end
 
       it 'executes AProcess#finalize eight' do
         expect(execution_order[7]).to eq('a_finalize')
       end
 
-      it 'executes AProcess#finalize ninth' do
-        expect(execution_order[8]).to eq('a_finalize')
+      it 'executes JProcess#finalize ninth' do
+        expect(execution_order[8]).to eq('j_finalize')
       end
     end
 
@@ -346,16 +346,16 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[6]).to eq('l_perform')
       end
 
-      it 'executes LProcess#finalize eight' do
-        expect(execution_order[7]).to eq('l_finalize')
+      it 'executes BProcess#finalize eight' do
+        expect(execution_order[7]).to eq('b_finalize')
       end
 
       it 'executes AProcess#finalize ninth' do
         expect(execution_order[8]).to eq('a_finalize')
       end
 
-      it 'executes BProcess#finalize tenth' do
-        expect(execution_order[9]).to eq('b_finalize')
+      it 'executes LProcess#finalize tenth' do
+        expect(execution_order[9]).to eq('l_finalize')
       end
     end
   end
