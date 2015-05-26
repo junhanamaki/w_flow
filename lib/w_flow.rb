@@ -2,7 +2,7 @@ require "w_flow/version"
 require "w_flow/configuration"
 require "w_flow/data"
 require "w_flow/report"
-require "w_flow/flow_supervisor"
+require "w_flow/supervisor"
 require "w_flow/flow"
 require "w_flow/node_process"
 require "w_flow/node"
@@ -14,8 +14,10 @@ module WFlow
 
   class InvalidArguments < StandardError; end
   class FlowFailure      < StandardError; end
+  class InvalidOperation < StandardError; end
 
   # WFlow message constants
   INVALID_RUN_PARAMS = "run must be invoked without arguments or an Hash"
   UNKNOWN_EXPRESSION = "can't evaluate expression"
+  INVALID_OPERATION  = "skip!, stop! or failure! can't be invoked during finalize/rollback"
 end

@@ -1,10 +1,10 @@
 module WFlow
   class Report
     extend Forwardable
-    def_delegators :@flow, :data, :success?, :failure?, :message
+    def_delegators :@supervisor, :data, :message, :succes?, :failure?
 
-    def initialize(flow)
-      @flow = flow
+    def initialize(supervisor)
+      @supervisor = supervisor
     end
   end
 end
