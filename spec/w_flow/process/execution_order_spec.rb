@@ -38,20 +38,16 @@ describe 'class that includes WFlow::Process' do
         expect(@report.success?).to eq(false)
       end
 
-      it 'returned execution_order has 3 entries' do
-        expect(execution_order.count).to eq(3)
+      it 'returned execution_order has 2 entries' do
+        expect(execution_order.count).to eq(2)
       end
 
       it 'executes setup first' do
         expect(execution_order[0]).to eq('b_setup')
       end
 
-      it 'executes rollback second' do
-        expect(execution_order[1]).to eq('b_rollback')
-      end
-
-      it 'executes finalize last' do
-        expect(execution_order[2]).to eq('b_finalize')
+      it 'executes finalize second' do
+        expect(execution_order[1]).to eq('b_finalize')
       end
     end
 
@@ -62,12 +58,8 @@ describe 'class that includes WFlow::Process' do
         expect(@report.success?).to eq(true)
       end
 
-      it 'returned execution_order has 1 entry' do
-        expect(execution_order.count).to eq(1)
-      end
-
-      it 'executes finalize first' do
-        expect(execution_order[0]).to eq('c_finalize')
+      it 'returned execution_order has 0 entries' do
+        expect(execution_order.count).to eq(0)
       end
     end
 
@@ -98,12 +90,12 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[3]).to eq('d_perform')
       end
 
-      it 'executes AProcess#Finalize fifth' do
-        expect(execution_order[4]).to eq('a_finalize')
+      it 'executes DProcess#Finalize fifth' do
+        expect(execution_order[4]).to eq('d_finalize')
       end
 
-      it 'executes DProcess#Finalize last' do
-        expect(execution_order[5]).to eq('d_finalize')
+      it 'executes AProcess#Finalize last' do
+        expect(execution_order[5]).to eq('a_finalize')
       end
     end
 
@@ -134,12 +126,12 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[3]).to eq('e_perform')
       end
 
-      it 'executes AProcess#Finalize fifth' do
-        expect(execution_order[4]).to eq('a_finalize')
+      it 'executes EProcess#Finalize fifth' do
+        expect(execution_order[4]).to eq('e_finalize')
       end
 
-      it 'executes EProcess#Finalize last' do
-        expect(execution_order[5]).to eq('e_finalize')
+      it 'executes AProcess#Finalize last' do
+        expect(execution_order[5]).to eq('a_finalize')
       end
     end
 
@@ -174,12 +166,8 @@ describe 'class that includes WFlow::Process' do
         expect(@report.success?).to eq(true)
       end
 
-      it 'returned execution_order has 1 entries' do
-        expect(execution_order.count).to eq(1)
-      end
-
-      it 'executes GProcess#finalize first' do
-        expect(execution_order[0]).to eq('g_finalize')
+      it 'returned execution_order has 0 entries' do
+        expect(execution_order.count).to eq(0)
       end
     end
 
@@ -206,12 +194,12 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[2]).to eq('h_perform')
       end
 
-      it 'executes BProcess#finalize fourth' do
-        expect(execution_order[3]).to eq('b_finalize')
+      it 'executes HProcess#finalize fourth' do
+        expect(execution_order[3]).to eq('h_finalize')
       end
 
-      it 'executes HProcess#finalize fifth' do
-        expect(execution_order[4]).to eq('h_finalize')
+      it 'executes BProcess#finalize fifth' do
+        expect(execution_order[4]).to eq('b_finalize')
       end
     end
 
@@ -222,8 +210,8 @@ describe 'class that includes WFlow::Process' do
         expect(@report.success?).to eq(true)
       end
 
-      it 'returned execution_order has 4 entries' do
-        expect(execution_order.count).to eq(4)
+      it 'returned execution_order has 3 entries' do
+        expect(execution_order.count).to eq(3)
       end
 
       it 'executes IProcess#setup first' do
@@ -234,12 +222,8 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[1]).to eq('i_perform')
       end
 
-      it 'executes GProcess#finalize third' do
-        expect(execution_order[2]).to eq('g_finalize')
-      end
-
-      it 'executes IProcess#finalize fourth' do
-        expect(execution_order[3]).to eq('i_finalize')
+      it 'executes IProcess#finalize third' do
+        expect(execution_order[2]).to eq('i_finalize')
       end
     end
 
@@ -278,16 +262,16 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[5]).to eq('j_perform')
       end
 
-      it 'executes AProcess#finalize seventh' do
-        expect(execution_order[6]).to eq('a_finalize')
+      it 'executes JProcess#finalize seventh' do
+        expect(execution_order[6]).to eq('j_finalize')
       end
 
       it 'executes AProcess#finalize eight' do
         expect(execution_order[7]).to eq('a_finalize')
       end
 
-      it 'executes JProcess#finalize ninth' do
-        expect(execution_order[8]).to eq('j_finalize')
+      it 'executes AProcess#finalize ninth' do
+        expect(execution_order[8]).to eq('a_finalize')
       end
     end
 
@@ -330,8 +314,8 @@ describe 'class that includes WFlow::Process' do
         expect(@report.success?).to eq(true)
       end
 
-      it 'returned execution_order has 11 entries' do
-        expect(execution_order.count).to eq(11)
+      it 'returned execution_order has 10 entries' do
+        expect(execution_order.count).to eq(10)
       end
 
       it 'executes LProcess#setup first' do
@@ -358,8 +342,20 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[5]).to eq('proc')
       end
 
-      it 'executes LProcess#perform seventh', :t do
+      it 'executes LProcess#perform seventh' do
         expect(execution_order[6]).to eq('l_perform')
+      end
+
+      it 'executes LProcess#finalize eight' do
+        expect(execution_order[7]).to eq('l_finalize')
+      end
+
+      it 'executes AProcess#finalize ninth' do
+        expect(execution_order[8]).to eq('a_finalize')
+      end
+
+      it 'executes BProcess#finalize tenth' do
+        expect(execution_order[9]).to eq('b_finalize')
       end
     end
   end

@@ -34,6 +34,18 @@ module WFlow
       @rollbackables << @current_process
     end
 
+    def skip!
+      throw :wflow_interrupt, :wflow_skip
+    end
+
+    def stop!
+      throw :wflow_interrupt, :wflow_stop
+    end
+
+    def failure!(message = nil)
+      raise FlowFailure, Marshal.dump(message)
+    end
+
     def success?
       !failure?
     end
