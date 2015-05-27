@@ -55,7 +55,7 @@ end
 # run process, it will return a report object
 report = SaveUser.run(user: current_user)
 
-report.data.success?
+report.success?
 ```
 
 
