@@ -40,25 +40,66 @@ Or install it yourself as:
 
 ## Usage
 
-On its most simplest form a task (in WFlow called a Process) is something like this:
+Imagine a situation where we want to update an appointment, notify the user of that update,
+and publish it in google calendar if needed:
 
 ```ruby
-class SaveUser
+class Find
   include WFlow::Process
 
+  # helper for flow.data
+  data_reader :appointment_id
+  data_writer :appointment
+
+  # perform is the name of the method that will be invoked when calling 'run'
   def perform
-    # arguments passed to run will be under flow.data
-    flow.data.user.save
+    self.appointment = Appointment.find(appointment_id)
+
+    # the previous code is the same as:
+    # flow.data.appointment = Appointment.find(flow.data.appointment_id)
   end
 end
 
-# run process, it will return a report object
-report = SaveUser.run(user: current_user)
+class UpdateAppointment
+  include WFlow::Process
 
+  execute Find, Update, NotifyUser
+
+  execute PublishInGoogleCalendar, if: :publish_in_google_calendar?
+
+protected
+
+  def publish_in_google_calendar?
+    flow.data.appointment.synch_in_google_calendar?
+  end
+end
+
+# imagining that we have the id of the appointment to be updated and the new attributes for the appointment
+report = UpdateAppointment.run(appointment_id: appointment_id, attributes: new_attributes)
+
+# ask if workflow was a success
 report.success?
 ```
 
+So what's going on here? We first declare a class and included the module WFlow::Process, so that
+we can compose the workflow for this process:
 
+```ruby
+class UpdateAppointment
+  include WFlow::Process
+```
+
+Now we can start composing. We compose by reusing other processes like this:
+
+```ruby
+  # this indicates that it will first Find, Update next and NotifyUser last
+  execute Find, Update, NotifyUser
+
+  # execute this process, only if method returns true
+  execute PublishInGoogleCalendar, if: :publish_in_google_calendar?
+```
+
+TODO: more documentation
 
 ## Contributing
 
