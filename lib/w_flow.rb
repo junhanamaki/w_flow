@@ -8,7 +8,6 @@ require "w_flow/node"
 require "w_flow/process"
 require "w_flow/workflow_report"
 require "w_flow/workflow"
-require "w_flow/helper"
 
 module WFlow
 
