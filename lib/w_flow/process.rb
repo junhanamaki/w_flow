@@ -1,33 +1,32 @@
 module WFlow
   module Process
+
     def self.included(klass)
       klass.extend(ClassMethods)
     end
 
     attr_reader :flow
 
-    def wflow_execute(supervisor)
-      supervisor.supervise(self) do |flow|
-        @flow = flow
+    def initialize(flow)
+      @flow        = flow
+      @wflow_nodes = self.class.wflow_nodes
+    end
 
-        setup
-
-        flow.finalizable!
-
-        self.class.wflow_nodes.each do |node|
-          node.execute(supervisor, self)
-        end
-
-        perform
-
-        flow.rollbackable!
+    def wflow_for_each_active_nodes
+      @wflow_nodes.each do |node|
+        yield(node) if node.execute?(self)
       end
     end
 
-    def setup;    end
-    def perform;  end
-    def rollback; end
-    def finalize; end
+    def wflow_eval(object, *args)
+      if object.is_a?(String) || object.is_a?(Symbol)
+        send(object.to_s, *args)
+      elsif object.is_a?(Proc)
+        instance_exec(*args, &object)
+      else
+        raise InvalidArguments, UNKNOWN_EXPRESSION
+      end
+    end
 
   protected
 
@@ -62,7 +61,7 @@ module WFlow
       def execute(*components, &block)
         options = components.last.is_a?(Hash) ? components.pop : {}
         components << block if block_given?
-        wflow_nodes << Node.new(components, options)
+        wflow_nodes << Node.build(components, options)
       end
 
       def run(params = {})
@@ -70,12 +69,9 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        supervisor = Supervisor.new(params)
-
-        new.wflow_execute(supervisor)
-
-        supervisor.report
+        Workflow.new(self).run(params)
       end
+
     end
   end
 end

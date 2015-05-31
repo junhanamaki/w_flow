@@ -1,18 +1,23 @@
 module WFlow
   class Flow
-    extend Forwardable
-    def_delegator  :@supervisor, :add_to_finalizables,  :finalizable!
-    def_delegator  :@supervisor, :add_to_rollbackables, :rollbackable!
-    def_delegators :@supervisor,
-                   :skip!,
-                   :stop!,
-                   :failure!,
-                   :data,
-                   :success?,
-                   :failure?
 
-    def initialize(supervisor)
-      @supervisor = supervisor
+    attr_reader :data
+
+    def initialize(data)
+      @data = data
     end
+
+    def skip!
+      Supervisor.signal_stop!
+    end
+
+    def stop!
+      Supervisor.signal_stop!
+    end
+
+    def failure!(message = nil)
+      Supervisor.signal_failure!(message)
+    end
+
   end
 end
