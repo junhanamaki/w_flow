@@ -5,6 +5,10 @@ module WFlow
 
     def initialize(main_process_class)
       @main_process_class = main_process_class
+    end
+
+    def run(params)
+      @flow = Flow.new(Data.new(params))
 
       @backlog       = []
       @finalizables  = []
@@ -12,24 +16,29 @@ module WFlow
 
       @failure     = false
       @failure_log = []
-    end
-
-    def run(params)
-      @flow = Flow.new(Data.new(params))
 
       process = @main_process_class.new(@flow)
 
-      result = execute_process(process)
+      result = Supervisor.supervise { execute_process(process) }
 
       set_and_log_failure(result.message) if result.failed?
 
-      finalize_processes
+      result = Supervisor.supervise do
+        @rollbackables.each(&:rollback) if failure?
+        @finalizables.each(&:finalize)
+      end
+
+      raise InvalidOperation, INVALID_OPERATION unless result.success?
+
+      WorkflowReport.new(self, @flow)
+    rescue StandardError
+      raise
     rescue ::StandardError => e
       raise unless Configuration.supress_errors?
 
       set_and_log_failure(message: e.message, backtrace: e.backtrace)
-    ensure
-      return WorkflowReport.new(self, @flow)
+
+      WorkflowReport.new(self, @flow)
     end
 
     def success?
@@ -43,49 +52,39 @@ module WFlow
   protected
 
     def execute_process(process)
-      Supervisor.supervise do
-        process.setup
+      process.setup
 
-        @finalizables.unshift(process)
+      @finalizables.unshift(process)
 
-        process.wflow_for_each_active_nodes do |node|
-          result = Supervisor.supervise { execute_node(node) }
+      process.wflow_for_each_active_nodes do |node|
+        result = Supervisor.supervise { execute_node(process, node) }
 
-          if result.stopped?
-            Supervisor.resignal!(result) unless node.cancel_stop?(process)
-          elsif result.failed?
-            if node.cancel_failure?(process)
-              log_failure(false, result.message)
-            else
-              Supervisor.resignal!(result)
-            end
+        if result.stopped?
+          Supervisor.resignal!(result) unless node.cancel_stop?(process)
+        elsif result.failed?
+          if node.cancel_failure?(process)
+            log_failure(false, result.message)
+          else
+            Supervisor.resignal!(result)
           end
         end
-
-        process.perform
-
-        @rollbackables << process
       end
+
+      process.perform
+
+      @rollbackables << process
     end
 
-    def execute_node(node)
-
-
-
+    def execute_node(process, node)
       if node.around_handler.nil?
-        result = Supervisor.supervise do
+        node.components.each do |component|
+          if component.is_a?(Class) && component <= Process
+            execute_process(component.new(@flow))
+          else
+            process.wflow_eval(component)
+          end
         end
-      else
       end
-    end
-
-    def finalize_processes
-      result = Supervisor.supervise do
-        @rollbackables.each(&:rollback) if failure?
-        @finalizables.each(&:finalize)
-      end
-
-      raise InvalidOperation, INVALID_OPERATION unless result.success?
     end
 
     def log_failure(message)
