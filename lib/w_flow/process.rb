@@ -8,14 +8,7 @@ module WFlow
     attr_reader :flow
 
     def initialize(flow)
-      @flow        = flow
-      @wflow_nodes = self.class.wflow_nodes
-    end
-
-    def wflow_for_each_active_nodes
-      @wflow_nodes.each do |node|
-        yield(node) if node.execute?(self)
-      end
+      @flow = flow
     end
 
     def wflow_eval(object, *args)

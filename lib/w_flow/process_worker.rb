@@ -18,20 +18,28 @@ module WFlow
       @process.setup
       @setup_completed = true
 
-      @process.wflow_for_each_active_nodes do |node_class|
-        node_worker = NodeWorker.new(node_class)
+      @process_class.wflow_nodes.each do |node_class|
+        next unless node_class.execute?(@process)
 
-        report = Supervisor.supervise { node_worker.run(workflow) }
+        node_worker = NodeWorker.new(node_class, @process)
+
+        report = Supervisor.supervise do
+          node_worker.run(workflow)
+        end
 
         if report.failed?
           node_worker.rollback
           node_worker.finalize
 
-          Supervisor.resignal!(report) unless node_worker.cancel_failure?
+          if node_class.cancel_failure?(@process)
+            workflow.log_failure(report.message)
+          else
+            Supervisor.resignal!(report)
+          end
         else
           @node_workers << node_worker
 
-          if report.stopped? && !node_worker.cancel_stop?
+          if report.stopped? && !node_class.cancel_stop?(@process)
             Supervisor.resignal!(report)
           end
         end
