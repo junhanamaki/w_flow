@@ -1,7 +1,5 @@
 module WFlow
   class ProcessWorker
-    extend Forwardable
-    def_delegators :@report, :message, :success?, :skipped?, :stopped?, :failed?
 
     def initialize(process_class)
       @process_class = process_class
@@ -17,21 +15,30 @@ module WFlow
     def run(workflow)
       init_state(workflow.flow)
 
-      @report = Supervisor.supervise do
-        process.setup
-        @setup_completed = true
+      @process.setup
+      @setup_completed = true
 
-        @process.wflow_for_each_active_nodes do |node_class|
-          node_worker = NodeWorker.new(node_class)
+      @process.wflow_for_each_active_nodes do |node_class|
+        node_worker = NodeWorker.new(node_class)
 
-          node_worker.run(workflow)
+        report = Supervisor.supervise { node_worker.run(workflow) }
 
-          @node_workers << node_worker if node_worker.success?
+        if report.failed?
+          node_worker.rollback
+          node_worker.finalize
+
+          Supervisor.resignal!(report) unless node_worker.cancel_failure?
+        else
+          @node_workers << node_worker
+
+          if report.stopped? && !node_worker.cancel_stop?
+            Supervisor.resignal!(report)
+          end
         end
-
-        process.perform
-        @perform_completed = true
       end
+
+      @process.perform
+      @perform_completed = true
     end
 
     def finalize

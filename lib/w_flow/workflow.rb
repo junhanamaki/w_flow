@@ -14,11 +14,11 @@ module WFlow
       @failure_log   = []
       process_worker = ProcessWorker.new(@process_class)
 
-      process_worker.run(self)
+      work_report = Supervisor.supervise { process_worker.run(self) }
 
       report = Supervisor.supervise do
-        if process_worker.failed?
-          set_failure_and_log(process_worker.message)
+        if work_report.failed?
+          set_failure_and_log(work_report.message)
           process_worker.rollback
         end
 
