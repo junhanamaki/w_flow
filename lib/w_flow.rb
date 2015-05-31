@@ -5,9 +5,11 @@ require "w_flow/supervisor_report"
 require "w_flow/supervisor"
 require "w_flow/flow"
 require "w_flow/node"
+require "w_flow/node_worker"
 require "w_flow/process"
-require "w_flow/workflow_report"
+require "w_flow/process_worker"
 require "w_flow/workflow"
+require "w_flow/workflow_report"
 
 module WFlow
 

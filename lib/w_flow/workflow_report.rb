@@ -2,12 +2,10 @@ module WFlow
   class WorkflowReport
 
     extend Forwardable
-    def_delegators :@workflow, :success?, :failure?, :failure_log
-    def_delegators :@flow, :data
+    def_delegators :@workflow, :data, :success?, :failure?, :failure_log
 
-    def initialize(workflow, flow)
+    def initialize(workflow)
       @workflow = workflow
-      @flow     = flow
     end
 
   end
