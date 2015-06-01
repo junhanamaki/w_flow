@@ -27,7 +27,11 @@ module WFlow
       report = Supervisor.supervise do
         @node_class.components.each do |component|
           if component.is_a?(Class) && component <= Process
-            ProcessWorker.new(component).run(@workflow)
+            process_worker = ProcessWorker.new(component)
+
+            process_worker.run(@workflow)
+
+            execution_chain << process_worker
           else
             @process.wflow_eval(component)
           end
