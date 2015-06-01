@@ -50,13 +50,13 @@ module WFlow
     def finalize
       @node_workers.reverse_each(&:finalize)
 
-      @process.finalize
+      @process.finalize if @perform_completed
     end
 
     def rollback
       @node_workers.reverse_each(&:rollback)
 
-      @process.rollback
+      @process.rollback if @setup_completed
     end
 
   end
