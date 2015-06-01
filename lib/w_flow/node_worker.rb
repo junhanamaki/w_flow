@@ -6,13 +6,13 @@ module WFlow
       @process    = process
     end
 
-    def init_state(workflow)
-      @workflow         = workflow
+    def init_state(flow)
+      @flow             = flow
       @execution_chains = []
     end
 
-    def run(workflow)
-      init_state(workflow)
+    def run(flow)
+      init_state(flow)
 
       if @node_class.around_handler.nil?
         execute_components
@@ -31,7 +31,7 @@ module WFlow
 
             execution_chain << process_worker
 
-            report = process_worker.run(@workflow)
+            report = process_worker.run(@flow)
           else
             @process.wflow_eval(component)
           end
@@ -42,7 +42,7 @@ module WFlow
           execution_chain.reverse_each(&:finalize)
 
           if options[:failure].nil? || options[:failure].call
-            @workflow.log_failure(report.message)
+            @flow.log_failure(report.message)
             return
           else
             Supervisor.resignal!(report)

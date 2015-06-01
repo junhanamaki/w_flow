@@ -3,8 +3,10 @@ module WFlow
 
     attr_reader :data
 
-    def initialize(data)
-      @data = data
+    def initialize(params)
+      @data        = Data.new(params)
+      @failure     = false
+      @failure_log = []
     end
 
     def skip!
@@ -17,6 +19,23 @@ module WFlow
 
     def failure!(message = nil)
       Supervisor.signal_failure!(message)
+    end
+
+    def success?
+      !failure?
+    end
+
+    def failure?
+      @failure
+    end
+
+    def log_failure(message)
+      @failure_log << message unless message.nil?
+    end
+
+    def set_failure_and_log(message)
+      @failure = true
+      log_failure(message)
     end
 
   end

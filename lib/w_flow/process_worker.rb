@@ -12,8 +12,8 @@ module WFlow
       @perform_completed = false
     end
 
-    def run(workflow)
-      init_state(workflow.flow)
+    def run(flow)
+      init_state(flow)
 
       @process.setup
       @setup_completed = true
@@ -23,14 +23,14 @@ module WFlow
 
         node_worker = NodeWorker.new(node_class, @process)
 
-        report = Supervisor.supervise { node_worker.run(workflow) }
+        report = Supervisor.supervise { node_worker.run(flow) }
 
         if report.failed?
           node_worker.rollback
           node_worker.finalize
 
           if node_class.cancel_failure?(@process)
-            workflow.log_failure(report.message)
+            flow.log_failure(report.message)
           else
             binding.pry
             Supervisor.resignal!(report)

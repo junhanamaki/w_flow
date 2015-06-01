@@ -67,7 +67,30 @@ module WFlow
           raise InvalidArgument, INVALID_RUN_PARAMS
         end
 
-        Workflow.new(self).run(params)
+        flow = Flow.new(params)
+
+        process_worker = ProcessWorker.new(self)
+
+        work_report = Supervisor.supervise { process_worker.run(flow) }
+
+        report = Supervisor.supervise do
+          if work_report.failed?
+            flow.set_failure_and_log(work_report.message)
+            process_worker.rollback
+          end
+
+          process_worker.finalize
+        end
+
+        raise InvalidOperation, INVALID_OPERATION unless report.success?
+
+        FlowReport.new(flow)
+      rescue ::StandardError => e
+        raise if e.is_a(StandardError) || !Configuration.supress_errors?
+
+        set_failure_and_log(message: e.message, backtrace: e.backtrace)
+
+        FlowReport.new(flow)
       end
 
     end

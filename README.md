@@ -20,7 +20,7 @@ inspiration for this gem.
 
 Tested with:
 
-  * ruby 2.2.1, 2.2.0, 2.1.1, 2.0.0
+  * ruby 2.2.2, 2.2.1, 2.2.0, 2.1.1, 2.0.0
 
 ## Installation
 
