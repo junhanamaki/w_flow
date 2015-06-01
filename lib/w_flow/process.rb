@@ -11,6 +11,11 @@ module WFlow
       @flow = flow
     end
 
+    def setup;    end
+    def perform;  end
+    def rollback; end
+    def finalize; end
+
     def wflow_eval(object, *args)
       if object.is_a?(String) || object.is_a?(Symbol)
         send(object.to_s, *args)

@@ -23,9 +23,7 @@ module WFlow
 
         node_worker = NodeWorker.new(node_class, @process)
 
-        report = Supervisor.supervise do
-          node_worker.run(workflow)
-        end
+        report = Supervisor.supervise { node_worker.run(workflow) }
 
         if report.failed?
           node_worker.rollback
