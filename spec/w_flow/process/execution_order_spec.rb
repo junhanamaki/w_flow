@@ -31,23 +31,27 @@ describe 'class that includes WFlow::Process' do
       end
     end
 
-    context 'when invoked on BProcess' do
+    context 'when invoked on BProcess'do
       let(:test_class) { BProcess }
 
       it 'reports failure' do
         expect(@report.success?).to eq(false)
       end
 
-      it 'returned execution_order has 2 entries' do
-        expect(execution_order.count).to eq(2)
+      it 'returned execution_order has 3 entries' do
+        expect(execution_order.count).to eq(3)
       end
 
       it 'executes setup first' do
         expect(execution_order[0]).to eq('b_setup')
       end
 
-      it 'executes finalize second' do
-        expect(execution_order[1]).to eq('b_finalize')
+      it 'executes rollback second' do
+        expect(execution_order[1]).to eq('b_rollback')
+      end
+
+      it 'executes finalize third' do
+        expect(execution_order[2]).to eq('b_finalize')
       end
     end
 
