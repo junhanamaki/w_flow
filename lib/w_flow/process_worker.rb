@@ -32,7 +32,6 @@ module WFlow
           if node_class.cancel_failure?(@process)
             flow.log_failure(report.message)
           else
-            binding.pry
             Supervisor.resignal!(report)
           end
         else

@@ -71,11 +71,11 @@ module WFlow
 
         process_worker = ProcessWorker.new(self)
 
-        work_report = Supervisor.supervise { process_worker.run(flow) }
+        process_report = Supervisor.supervise { process_worker.run(flow) }
 
         report = Supervisor.supervise do
-          if work_report.failed?
-            flow.set_failure_and_log(work_report.message)
+          if process_report.failed?
+            flow.set_failure_and_log(process_report.message)
             process_worker.rollback
           end
 
@@ -86,7 +86,7 @@ module WFlow
 
         FlowReport.new(flow)
       rescue ::StandardError => e
-        raise if e.is_a(StandardError) || !Configuration.supress_errors?
+        raise if e.is_a?(StandardError) || !Configuration.supress_errors?
 
         set_failure_and_log(message: e.message, backtrace: e.backtrace)
 
