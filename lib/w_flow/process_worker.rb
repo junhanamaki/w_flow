@@ -32,6 +32,7 @@ module WFlow
           if node_class.cancel_failure?(@process)
             workflow.log_failure(report.message)
           else
+            binding.pry
             Supervisor.resignal!(report)
           end
         else
@@ -50,13 +51,13 @@ module WFlow
     def finalize
       @node_workers.reverse_each(&:finalize)
 
-      @process.finalize if @perform_completed
+      @process.finalize if @setup_completed
     end
 
     def rollback
       @node_workers.reverse_each(&:rollback)
 
-      @process.rollback if @setup_completed
+      @process.rollback if @perform_completed
     end
 
   end

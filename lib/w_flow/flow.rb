@@ -8,7 +8,7 @@ module WFlow
     end
 
     def skip!
-      Supervisor.signal_stop!
+      Supervisor.signal_skip!
     end
 
     def stop!

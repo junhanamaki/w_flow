@@ -38,20 +38,16 @@ describe 'class that includes WFlow::Process' do
         expect(@report.success?).to eq(false)
       end
 
-      it 'returned execution_order has 3 entries' do
-        expect(execution_order.count).to eq(3)
+      it 'returned execution_order has 2 entries' do
+        expect(execution_order.count).to eq(2)
       end
 
       it 'executes setup first' do
         expect(execution_order[0]).to eq('b_setup')
       end
 
-      it 'executes rollback second' do
-        expect(execution_order[1]).to eq('b_rollback')
-      end
-
-      it 'executes finalize third' do
-        expect(execution_order[2]).to eq('b_finalize')
+      it 'executes finalize second' do
+        expect(execution_order[1]).to eq('b_finalize')
       end
     end
 
@@ -194,12 +190,12 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[1]).to eq('b_setup')
       end
 
-      it 'executes HProcess#perform third' do
-        expect(execution_order[2]).to eq('h_perform')
+      it 'executes BProcess#finalize third' do
+        expect(execution_order[2]).to eq('b_finalize')
       end
 
-      it 'executes BProcess#finalize fourth' do
-        expect(execution_order[3]).to eq('b_finalize')
+      it 'executes HProcess#perform fourth' do
+        expect(execution_order[3]).to eq('h_perform')
       end
 
       it 'executes HProcess#finalize fifth' do
@@ -311,7 +307,7 @@ describe 'class that includes WFlow::Process' do
       end
     end
 
-    context 'when invoked on LProcess' do
+    context 'when invoked on LProcess', :t do
       let(:test_class) { LProcess }
 
       it 'reports success' do

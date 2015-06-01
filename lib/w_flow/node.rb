@@ -23,7 +23,7 @@ module WFlow
 
       def execute?(process)
         (if_condition.nil?     || process.wflow_eval(if_condition)) &&
-        (unless_condition.nil? || process.wflow_eval(unless_condition))
+        (unless_condition.nil? || !process.wflow_eval(unless_condition))
       end
 
       def cancel_stop?(process)

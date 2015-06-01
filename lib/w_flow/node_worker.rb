@@ -24,34 +24,35 @@ module WFlow
     def execute_components(options = {})
       execution_chain = []
 
-      report = Supervisor.supervise do
-        @node_class.components.each do |component|
+
+      @node_class.components.each do |component|
+        report = Supervisor.supervise do
           if component.is_a?(Class) && component <= Process
             process_worker = ProcessWorker.new(component)
 
-            process_worker.run(@workflow)
-
             execution_chain << process_worker
+
+            report = process_worker.run(@workflow)
           else
             @process.wflow_eval(component)
           end
         end
-      end
 
-      if report.failed?
-        execution_chain.reverse_each(&:rollback)
-        execution_chain.reverse_each(&:finalize)
+        if report.failed?
+          execution_chain.reverse_each(&:rollback)
+          execution_chain.reverse_each(&:finalize)
 
-        if options[:failure].nil? || options[:failure].call
-          @workflow.log_failure(report.message)
+          if options[:failure].nil? || options[:failure].call
+            @workflow.log_failure(report.message)
+          else
+            Supervisor.resignal!(report)
+          end
         else
-          Supervisor.resignal!(report)
-        end
-      else
-        @execution_chains << execution_chain
+          @execution_chains << execution_chain
 
-        if report.stopped? && (options[:stop].nil? || !options[:stop].call)
-          Supervisor.resignal!(report)
+          if report.stopped? && (options[:stop].nil? || !options[:stop].call)
+            Supervisor.resignal!(report)
+          end
         end
       end
     end
