@@ -314,8 +314,8 @@ describe 'class that includes WFlow::Process' do
         expect(@report.success?).to eq(true)
       end
 
-      it 'returned execution_order has 10 entries' do
-        expect(execution_order.count).to eq(10)
+      it 'returned execution_order has 11 entries' do
+        expect(execution_order.count).to eq(11)
       end
 
       it 'executes LProcess#setup first' do
@@ -334,28 +334,32 @@ describe 'class that includes WFlow::Process' do
         expect(execution_order[3]).to eq('b_setup')
       end
 
-      it 'executes procedure in LProcess fifth' do
-        expect(execution_order[4]).to eq('proc')
+      it 'executes AProcess#rollback fifth' do
+        expect(execution_order[4]).to eq('a_rollback')
       end
 
-      it 'executes procedure in LProcess sixth' do
-        expect(execution_order[5]).to eq('proc')
+      it 'executes BProcess#finalize sixth' do
+        expect(execution_order[5]).to eq('b_finalize')
       end
 
-      it 'executes LProcess#perform seventh' do
-        expect(execution_order[6]).to eq('l_perform')
+      it 'executes AProcess#finalize seventh' do
+        expect(execution_order[6]).to eq('a_finalize')
       end
 
-      it 'executes BProcess#finalize eight' do
-        expect(execution_order[7]).to eq('b_finalize')
+      it 'executes procedure eight' do
+        expect(execution_order[7]).to eq('proc')
       end
 
-      it 'executes AProcess#finalize ninth' do
-        expect(execution_order[8]).to eq('a_finalize')
+      it 'executes procesure ninth' do
+        expect(execution_order[8]).to eq('proc')
       end
 
-      it 'executes LProcess#finalize tenth' do
-        expect(execution_order[9]).to eq('l_finalize')
+      it 'executes LProcess#perform tenth' do
+        expect(execution_order[9]).to eq('l_perform')
+      end
+
+      it 'executes LProcess#finalize eleventh' do
+        expect(execution_order[10]).to eq('l_finalize')
       end
     end
   end

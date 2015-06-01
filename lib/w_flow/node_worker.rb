@@ -24,7 +24,6 @@ module WFlow
     def execute_components(options = {})
       execution_chain = []
 
-
       @node_class.components.each do |component|
         report = Supervisor.supervise do
           if component.is_a?(Class) && component <= Process
@@ -44,17 +43,19 @@ module WFlow
 
           if options[:failure].nil? || options[:failure].call
             @workflow.log_failure(report.message)
+            return
           else
             Supervisor.resignal!(report)
           end
         else
-          @execution_chains << execution_chain
-
           if report.stopped? && (options[:stop].nil? || !options[:stop].call)
+            @execution_chains << execution_chain
             Supervisor.resignal!(report)
           end
         end
       end
+
+      @execution_chains << execution_chain
     end
 
     def finalize
