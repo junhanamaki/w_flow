@@ -16,16 +16,6 @@ module WFlow
     def rollback; end
     def finalize; end
 
-    def wflow_eval(object, *args)
-      if object.is_a?(String) || object.is_a?(Symbol)
-        send(object.to_s, *args)
-      elsif object.is_a?(Proc)
-        instance_exec(*args, &object)
-      else
-        raise InvalidArguments, UNKNOWN_EXPRESSION
-      end
-    end
-
   protected
 
     module ClassMethods

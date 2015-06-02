@@ -22,16 +22,26 @@ module WFlow
       end
 
       def execute?(process)
-        (if_condition.nil?     || process.wflow_eval(if_condition)) &&
-        (unless_condition.nil? || !process.wflow_eval(unless_condition))
+        (if_condition.nil?     || process_eval(process, if_condition)) &&
+        (unless_condition.nil? || !process_eval(process, unless_condition))
       end
 
       def cancel_stop?(process)
-        !stop_condition.nil? && !process.wflow_eval(stop_condition)
+        !stop_condition.nil? && !process_eval(process, stop_condition)
       end
 
       def cancel_failure?(process)
-        !failure_condition.nil? && !process.wflow_eval(failure_condition)
+        !failure_condition.nil? && !process_eval(process, failure_condition)
+      end
+
+      def process_eval(process, object, *args)
+        if object.is_a?(String) || object.is_a?(Symbol)
+          process.send(object.to_s, *args)
+        elsif object.is_a?(Proc)
+          process.instance_exec(*args, &object)
+        else
+          raise InvalidArguments, UNKNOWN_EXPRESSION
+        end
       end
 
     end
@@ -77,7 +87,7 @@ module WFlow
 
             report = process_worker.run_as_child(@flow)
           else
-            @owner_process.wflow_eval(component)
+            self.class.process_eval(@owner_process, component)
           end
         end
 
@@ -117,5 +127,6 @@ module WFlow
     def failure_condition
       @failure_condition ||= self.class.failure_condition
     end
+
   end
 end
