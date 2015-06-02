@@ -87,7 +87,7 @@ module WFlow
 
             execution_chain << process_worker
 
-            report = process_worker.run_as_child(@flow)
+            process_worker.run_as_child(@flow)
           else
             self.class.process_eval(@owner_process, component)
           end
