@@ -1,20 +1,47 @@
 module WFlow
   class ProcessWorker
-
     def initialize(process_class)
       @process_class = process_class
     end
 
-    def init_state(flow)
-      @process = @process_class.new(flow)
-      @nodes   = []
-      @setup_completed   = false
-      @perform_completed = false
+    def run_as_main(flow)
+      setup(flow)
+
+      process_report = Supervisor.supervise { run }
+
+      report = Supervisor.supervise do
+        if process_report.failed?
+          flow.set_failure_and_log(process_report.message)
+          rollback
+        end
+
+        finalize
+      end
+
+      raise InvalidOperation, INVALID_OPERATION unless report.success?
     end
 
-    def run(flow)
-      init_state(flow)
+    def run_as_child(flow)
+      setup(flow)
 
+      run
+    end
+
+    def finalize
+      @nodes.reverse_each(&:finalize)
+
+      @process.finalize if @setup_completed
+    end
+
+    def rollback
+      @nodes.reverse_each(&:rollback)
+
+      @process.rollback if @perform_completed
+    end
+
+  protected
+
+    def run
       @process.setup
       @setup_completed = true
 
@@ -23,14 +50,14 @@ module WFlow
 
         node = node_class.new(@process)
 
-        report = Supervisor.supervise { node.run(flow) }
+        report = Supervisor.supervise { node.run(@flow) }
 
         if report.failed?
           node.rollback
           node.finalize
 
           if node_class.cancel_failure?(@process)
-            flow.log_failure(report.message)
+            @flow.log_failure(report.message)
           else
             Supervisor.resignal!(report)
           end
@@ -47,16 +74,12 @@ module WFlow
       @perform_completed = true
     end
 
-    def finalize
-      @nodes.reverse_each(&:finalize)
-
-      @process.finalize if @setup_completed
-    end
-
-    def rollback
-      @nodes.reverse_each(&:rollback)
-
-      @process.rollback if @perform_completed
+    def setup(flow)
+      @flow    = flow
+      @process = @process_class.new(flow)
+      @nodes   = []
+      @setup_completed   = false
+      @perform_completed = false
     end
 
   end

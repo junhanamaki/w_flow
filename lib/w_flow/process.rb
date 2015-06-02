@@ -69,20 +69,7 @@ module WFlow
 
         flow = Flow.new(params)
 
-        process_worker = ProcessWorker.new(self)
-
-        process_report = Supervisor.supervise { process_worker.run(flow) }
-
-        report = Supervisor.supervise do
-          if process_report.failed?
-            flow.set_failure_and_log(process_report.message)
-            process_worker.rollback
-          end
-
-          process_worker.finalize
-        end
-
-        raise InvalidOperation, INVALID_OPERATION unless report.success?
+        ProcessWorker.new(self).run_as_main(flow)
 
         FlowReport.new(flow)
       rescue ::StandardError => e
