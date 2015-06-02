@@ -6,8 +6,8 @@ module WFlow
     end
 
     def init_state(flow)
-      @process           = @process_class.new(flow)
-      @node_workers      = []
+      @process = @process_class.new(flow)
+      @nodes   = []
       @setup_completed   = false
       @perform_completed = false
     end
@@ -21,13 +21,13 @@ module WFlow
       @process_class.wflow_nodes.each do |node_class|
         next unless node_class.execute?(@process)
 
-        node_worker = NodeWorker.new(node_class, @process)
+        node = node_class.new(@process)
 
-        report = Supervisor.supervise { node_worker.run(flow) }
+        report = Supervisor.supervise { node.run(flow) }
 
         if report.failed?
-          node_worker.rollback
-          node_worker.finalize
+          node.rollback
+          node.finalize
 
           if node_class.cancel_failure?(@process)
             flow.log_failure(report.message)
@@ -35,7 +35,7 @@ module WFlow
             Supervisor.resignal!(report)
           end
         else
-          @node_workers << node_worker
+          @nodes << node
 
           if report.stopped? && !node_class.cancel_stop?(@process)
             Supervisor.resignal!(report)
@@ -48,13 +48,13 @@ module WFlow
     end
 
     def finalize
-      @node_workers.reverse_each(&:finalize)
+      @nodes.reverse_each(&:finalize)
 
       @process.finalize if @setup_completed
     end
 
     def rollback
-      @node_workers.reverse_each(&:rollback)
+      @nodes.reverse_each(&:rollback)
 
       @process.rollback if @perform_completed
     end
