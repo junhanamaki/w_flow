@@ -54,10 +54,12 @@ module WFlow
       @flow             = flow
       @execution_chains = []
 
-      if around_handler.nil?
-        execute_components
-      else
-        around_handler.call(method(:execute_components))
+      Supervisor.supervise do
+        if around_handler.nil?
+          execute_components
+        else
+          around_handler.call(method(:execute_components))
+        end
       end
     end
 
