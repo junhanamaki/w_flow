@@ -55,13 +55,13 @@ module WFlow
       @setup_completed = true
 
       @process_class.wflow_nodes.each do |node_class|
-        node = node_class.new(@process)
+        node_worker = NodeWorker.new(@process, node_class)
 
-        next unless node.execute?
+        next unless node_worker.execute?
 
-        @executed_nodes << node
+        @executed_nodes << node_worker
 
-        report = node.run(@flow)
+        report = node_worker.run(@flow)
       end
 
       @process.perform
