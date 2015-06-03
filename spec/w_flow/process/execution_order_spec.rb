@@ -7,6 +7,34 @@ describe 'class that includes WFlow::Process' do
   before                { @report = test_class.run(params) }
 
   describe '.run' do
+    context 'when invoked on MProcess' do
+      let(:test_class) { MProcess }
+
+      it 'reports failure' do
+        expect(@report.failure?).to eq(true)
+      end
+
+      it 'returned execution_order has 4 entries' do
+        expect(execution_order.count).to eq(4)
+      end
+
+      it 'executes MProcess#setup first' do
+        expect(execution_order[0]).to eq('m_setup')
+      end
+
+      it 'executes BProcess#setup second' do
+        expect(execution_order[1]).to eq('b_setup')
+      end
+
+      it 'executes BProcess#finalize third' do
+        expect(execution_order[2]).to eq('b_finalize')
+      end
+
+      it 'executes MProcess#finalize fourth' do
+        expect(execution_order[3]).to eq('m_finalize')
+      end
+    end
+
     context 'when invoked on AProcess' do
       let(:test_class) { AProcess }
 

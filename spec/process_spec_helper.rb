@@ -138,3 +138,13 @@ class LProcess < Base
   def finalize; execution_order << 'l_finalize'; end
   def rollback; execution_order << 'l_rollback'; end
 end
+
+class MProcess < Base
+  def setup;    execution_order << 'm_setup';    end
+
+  execute BProcess
+
+  def perform;  execution_order << 'm_perform';  end
+  def finalize; execution_order << 'm_finalize'; end
+  def rollback; execution_order << 'm_rollback'; end
+end

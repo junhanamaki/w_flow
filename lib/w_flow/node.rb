@@ -18,7 +18,7 @@ module WFlow
       @process = process
       @tasks   = self.class.tasks
 
-      options = self.class.options
+      options  = self.class.options
 
       @execute_if      = options[:if]
       @execute_unless  = options[:unless]
@@ -69,14 +69,14 @@ module WFlow
   protected
 
     def execute_tasks(options = {})
-      node_flow = []
+      executed_task_group = []
 
       @tasks.each do |component|
         report = Supervisor.supervise do
           if component.is_a?(Class) && component <= Process
             process_worker = ProcessWorker.new(component)
 
-            node_flow << process_worker
+            executed_task_group << process_worker
 
             process_worker.run_as_child(@flow)
           else
@@ -85,24 +85,24 @@ module WFlow
         end
 
         if report.failed?
-          node_flow.reverse_each(&:rollback)
-          node_flow.reverse_each(&:finalize)
+          executed_task_group.reverse_each(&:rollback)
+          executed_task_group.reverse_each(&:finalize)
 
           if options[:failure].nil? || options[:failure].call
+            Supervisor.resignal!(report)
+          else
             @flow.log_failure(report.message)
             return
-          else
-            Supervisor.resignal!(report)
           end
         else
           if report.stopped? && (options[:stop].nil? || !options[:stop].call)
-            @executed_task_groups << node_flow
+            @executed_task_groups << executed_task_group
             Supervisor.resignal!(report)
           end
         end
       end
 
-      @executed_task_groups << node_flow
+      @executed_task_groups << executed_task_group
     end
 
     def process_eval(object, *args)
@@ -124,8 +124,8 @@ module WFlow
     end
 
     def executed_groups_do(order)
-      @executed_task_groups.reverse_each do |node_flow|
-        node_flow.reverse_each(&order)
+      @executed_task_groups.reverse_each do |executed_task_group|
+        executed_task_group.reverse_each(&order)
       end
     end
 
