@@ -48,6 +48,8 @@ module WFlow
         rollback
         finalize
 
+        @executed_task_groups.clear
+
         if cancel_failure?
           @flow.log_failure(report.message)
         else
