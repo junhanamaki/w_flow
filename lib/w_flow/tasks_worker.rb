@@ -29,16 +29,14 @@ module WFlow
 
           @executed_tasks.clear
 
-          if cancel_failure?
+          if signal_failure?
+            Supervisor.resignal!(report)
+          else
             flow.log_failure(report.message)
             return
-          else
-            Supervisor.resignal!(report)
           end
         else
-          if report.stopped? && !cancel_stop?
-            Supervisor.resignal!(report)
-          end
+          Supervisor.resignal!(report) if report.stopped? && signal_stop?
         end
       end
     end
@@ -53,12 +51,12 @@ module WFlow
 
   protected
 
-    def cancel_failure?
-      !@options[:failure].nil? && !@options[:failure].call
+    def signal_failure?
+      @options[:failure].nil? || @options[:failure].call
     end
 
-    def cancel_stop?
-      !@options[:stop].nil? && !options[:stop].call
+    def signal_stop?
+      @options[:stop].nil? || @options[:stop].call
     end
 
     def executed_do(order)
