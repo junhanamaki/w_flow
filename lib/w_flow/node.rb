@@ -47,19 +47,19 @@ module WFlow
     end
 
     def initialize(owner_process)
-      @owner_process = owner_process
+      @owner_process     = owner_process
+      @components        = self.class.components
+      @around_handler    = self.class.around_handler
     end
 
     def run(flow)
       @flow             = flow
       @execution_chains = []
 
-      Supervisor.supervise do
-        if around_handler.nil?
-          execute_components
-        else
-          around_handler.call(method(:execute_components))
-        end
+      if @around_handler.nil?
+        execute_components
+      else
+        @around_handler.call(method(:execute_components))
       end
     end
 
@@ -80,7 +80,7 @@ module WFlow
     def execute_components(options = {})
       execution_chain = []
 
-      components.each do |component|
+      @components.each do |component|
         report = Supervisor.supervise do
           if component.is_a?(Class) && component <= Process
             process_worker = ProcessWorker.new(component)
@@ -112,22 +112,6 @@ module WFlow
       end
 
       @execution_chains << execution_chain
-    end
-
-    def components
-      @components ||= self.class.components
-    end
-
-    def around_handler
-      @around_handler ||= self.class.around_handler
-    end
-
-    def stop_condition
-      @stop_condition ||= self.class.stop_condition
-    end
-
-    def failure_condition
-      @failure_condition ||= self.class.failure_condition
     end
 
   end

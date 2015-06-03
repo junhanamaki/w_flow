@@ -50,7 +50,7 @@ module WFlow
 
         node = node_class.new(@process)
 
-        report = node.run(@flow)
+        report = Supervisor.supervise { node.run(@flow) }
 
         if report.failed?
           node.rollback
