@@ -7,21 +7,12 @@ module WFlow
     end
 
     def run(flow, options = {})
-      @executed_tasks = []
+      @flow           = flow
       @options        = options
+      @executed_tasks = []
 
       @tasks.each do |task|
-        report = Supervisor.supervise do
-          if task.is_a?(Class) && task <= Process
-            process_worker = ProcessWorker.new(task)
-
-            @executed_tasks << process_worker
-
-            process_worker.run_as_child(flow)
-          else
-            @owner_node.process_eval(task)
-          end
-        end
+        report = Supervisor.supervise { execute_task(task) }
 
         if report.failed?
           rollback
@@ -50,6 +41,18 @@ module WFlow
     end
 
   protected
+
+    def execute_task(task)
+      if task.is_a?(Class) && task <= Process
+        process_worker = ProcessWorker.new(task)
+
+        @executed_tasks << process_worker
+
+        process_worker.run_as_child(@flow)
+      else
+        @owner_node.process_eval(task)
+      end
+    end
 
     def signal_failure?
       @options[:failure].nil? || @options[:failure].call

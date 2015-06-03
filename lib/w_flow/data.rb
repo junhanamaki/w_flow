@@ -1,5 +1,6 @@
 module WFlow
   class Data
+
     def initialize(data)
       @data = data
     end
@@ -15,5 +16,6 @@ module WFlow
         @data[method_name.to_sym]
       end
     end
+
   end
 end

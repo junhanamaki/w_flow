@@ -1,5 +1,6 @@
 module WFlow
   class NodeWorker
+
     def initialize(owner_process, node_class)
       @owner_process = owner_process
       @tasks   = node_class.tasks
@@ -85,5 +86,6 @@ module WFlow
     def executed_do(order)
       @executed_tasks_workers.reverse_each(&order)
     end
+
   end
 end

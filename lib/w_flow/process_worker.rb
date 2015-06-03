@@ -1,5 +1,6 @@
 module WFlow
   class ProcessWorker
+
     def initialize(process_class)
       @process_class = process_class
     end

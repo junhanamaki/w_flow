@@ -1,5 +1,6 @@
 module WFlow
   class Configuration
+
     attr_reader :supress_errors
 
     class << self
@@ -25,5 +26,6 @@ module WFlow
     def initialize
       @supress_errors = false
     end
+
   end
 end
