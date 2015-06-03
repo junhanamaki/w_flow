@@ -3,20 +3,20 @@ module WFlow
 
     class << self
 
-      attr_reader :components, :options
+      attr_reader :tasks, :options
 
-      def build(components, options)
+      def build(tasks, options)
         Class.new(self) do |klass|
-          @components = components
-          @options    = options
+          @tasks   = tasks
+          @options = options
         end
       end
 
     end
 
     def initialize(process)
-      @process    = process
-      @components = self.class.components
+      @process = process
+      @tasks   = self.class.tasks
 
       options = self.class.options
 
@@ -34,13 +34,13 @@ module WFlow
 
     def run(flow)
       @flow = flow
-      @executed_node_groups = []
+      @executed_task_groups = []
 
       report = Supervisor.supervise do
         if @around_proc.nil?
-          execute_components
+          execute_tasks
         else
-          process_eval(@around_proc, method(:execute_components))
+          process_eval(@around_proc, method(:execute_tasks))
         end
       end
 
@@ -68,15 +68,15 @@ module WFlow
 
   protected
 
-    def execute_components(options = {})
-      execution_chain = []
+    def execute_tasks(options = {})
+      node_flow = []
 
-      @components.each do |component|
+      @tasks.each do |component|
         report = Supervisor.supervise do
           if component.is_a?(Class) && component <= Process
             process_worker = ProcessWorker.new(component)
 
-            execution_chain << process_worker
+            node_flow << process_worker
 
             process_worker.run_as_child(@flow)
           else
@@ -85,8 +85,8 @@ module WFlow
         end
 
         if report.failed?
-          execution_chain.reverse_each(&:rollback)
-          execution_chain.reverse_each(&:finalize)
+          node_flow.reverse_each(&:rollback)
+          node_flow.reverse_each(&:finalize)
 
           if options[:failure].nil? || options[:failure].call
             @flow.log_failure(report.message)
@@ -96,13 +96,13 @@ module WFlow
           end
         else
           if report.stopped? && (options[:stop].nil? || !options[:stop].call)
-            @executed_node_groups << execution_chain
+            @executed_task_groups << node_flow
             Supervisor.resignal!(report)
           end
         end
       end
 
-      @executed_node_groups << execution_chain
+      @executed_task_groups << node_flow
     end
 
     def process_eval(object, *args)
@@ -124,11 +124,9 @@ module WFlow
     end
 
     def executed_groups_do(order)
-      @executed_node_groups.reverse_each do |execution_chain|
-        execution_chain.reverse_each(&order)
+      @executed_task_groups.reverse_each do |node_flow|
+        node_flow.reverse_each(&order)
       end
-
-      @executed_node_groups.clear
     end
 
   end

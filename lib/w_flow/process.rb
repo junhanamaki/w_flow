@@ -46,10 +46,10 @@ module WFlow
         end
       end
 
-      def execute(*components, &block)
-        options = components.last.is_a?(Hash) ? components.pop : {}
-        components << block if block_given?
-        wflow_nodes << Node.build(components, options)
+      def execute(*tasks, &block)
+        options = tasks.last.is_a?(Hash) ? tasks.pop : {}
+        tasks << block if block_given?
+        wflow_nodes << Node.build(tasks, options)
       end
 
       def run(params = {})
