@@ -9,6 +9,7 @@ require "w_flow/node"
 require "w_flow/node_worker"
 require "w_flow/process"
 require "w_flow/process_worker"
+require "w_flow/tasks_worker"
 
 module WFlow
 

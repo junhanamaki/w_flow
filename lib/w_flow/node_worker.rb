@@ -1,7 +1,7 @@
 module WFlow
   class NodeWorker
-    def initialize(process, node_class)
-      @process = process
+    def initialize(owner_process, node_class)
+      @owner_process = owner_process
       @tasks   = node_class.tasks
 
       options  = node_class.options
@@ -20,7 +20,7 @@ module WFlow
 
     def run(flow)
       @flow = flow
-      @executed_task_groups = []
+      @executed_tasks_workers = []
 
       report = Supervisor.supervise do
         if @around_proc.nil?
@@ -34,7 +34,7 @@ module WFlow
         rollback
         finalize
 
-        @executed_task_groups.clear
+        @executed_tasks_workers.clear
 
         if cancel_failure?
           @flow.log_failure(report.message)
@@ -47,60 +47,31 @@ module WFlow
     end
 
     def finalize
-      executed_groups_do(:finalize)
+      executed_do(:finalize)
     end
 
     def rollback
-      executed_groups_do(:rollback)
+      executed_do(:rollback)
+    end
+
+    def process_eval(object, *args)
+      if object.is_a?(String) || object.is_a?(Symbol)
+        @owner_process.send(object.to_s, *args)
+      elsif object.is_a?(Proc)
+        @owner_process.instance_exec(*args, &object)
+      else
+        raise InvalidArguments, UNKNOWN_EXPRESSION
+      end
     end
 
   protected
 
     def execute_tasks(options = {})
-      executed_task_group = []
+      tasks_worker = TasksWorker.new(self, @tasks)
 
-      @tasks.each do |task|
-        report = Supervisor.supervise do
-          if task.is_a?(Class) && task <= Process
-            process_worker = ProcessWorker.new(task)
+      @executed_tasks_workers << tasks_worker
 
-            executed_task_group << process_worker
-
-            process_worker.run_as_child(@flow)
-          else
-            process_eval(task)
-          end
-        end
-
-        if report.failed?
-          executed_task_group.reverse_each(&:rollback)
-          executed_task_group.reverse_each(&:finalize)
-
-          if options[:failure].nil? || options[:failure].call
-            Supervisor.resignal!(report)
-          else
-            @flow.log_failure(report.message)
-            return
-          end
-        else
-          if report.stopped? && (options[:stop].nil? || !options[:stop].call)
-            @executed_task_groups << executed_task_group
-            Supervisor.resignal!(report)
-          end
-        end
-      end
-
-      @executed_task_groups << executed_task_group
-    end
-
-    def process_eval(object, *args)
-      if object.is_a?(String) || object.is_a?(Symbol)
-        @process.send(object.to_s, *args)
-      elsif object.is_a?(Proc)
-        @process.instance_exec(*args, &object)
-      else
-        raise InvalidArguments, UNKNOWN_EXPRESSION
-      end
+      tasks_worker.run(@flow, options)
     end
 
     def cancel_stop?
@@ -111,10 +82,8 @@ module WFlow
       !@confirm_failure.nil? && !process_eval(@confirm_failure)
     end
 
-    def executed_groups_do(order)
-      @executed_task_groups.reverse_each do |executed_task_group|
-        executed_task_group.reverse_each(&order)
-      end
+    def executed_do(order)
+      @executed_tasks_workers.reverse_each(&order)
     end
   end
 end
