@@ -3,76 +3,67 @@ module WFlow
 
     class << self
 
-      attr_reader :components,
-                  :if_condition,
-                  :unless_condition,
-                  :stop_condition,
-                  :failure_condition,
-                  :around_handler
+      attr_reader :components, :options
 
       def build(components, options)
         Class.new(self) do |klass|
-          @components        = components
-          @if_condition      = options[:if]
-          @unless_condition  = options[:unless]
-          @stop_condition    = options[:stop]
-          @failure_condition = options[:failure]
-          @around_handler    = options[:around]
-        end
-      end
-
-      def execute?(process)
-        (if_condition.nil?     || process_eval(process, if_condition)) &&
-        (unless_condition.nil? || !process_eval(process, unless_condition))
-      end
-
-      def cancel_stop?(process)
-        !stop_condition.nil? && !process_eval(process, stop_condition)
-      end
-
-      def cancel_failure?(process)
-        !failure_condition.nil? && !process_eval(process, failure_condition)
-      end
-
-      def process_eval(process, object, *args)
-        if object.is_a?(String) || object.is_a?(Symbol)
-          process.send(object.to_s, *args)
-        elsif object.is_a?(Proc)
-          process.instance_exec(*args, &object)
-        else
-          raise InvalidArguments, UNKNOWN_EXPRESSION
+          @components = components
+          @options    = options
         end
       end
 
     end
 
-    def initialize(owner_process)
-      @owner_process     = owner_process
-      @components        = self.class.components
-      @around_handler    = self.class.around_handler
+    def initialize(process)
+      @process    = process
+      @components = self.class.components
+
+      options = self.class.options
+
+      @execute_if      = options[:if]
+      @execute_unless  = options[:unless]
+      @around_proc     = options[:around]
+      @confirm_stop    = options[:stop]
+      @confirm_failure = options[:failure]
+    end
+
+    def execute?
+      (@execute_if.nil?     || process_eval(@execute_if)) &&
+      (@execute_unless.nil? || !process_eval(@execute_unless))
     end
 
     def run(flow)
-      @flow             = flow
-      @execution_chains = []
+      @flow = flow
+      @executed_node_groups = []
 
-      if @around_handler.nil?
-        execute_components
-      else
-        @around_handler.call(method(:execute_components))
+      report = Supervisor.supervise do
+        if @around_proc.nil?
+          execute_components
+        else
+          process_eval(@around_proc, method(:execute_components))
+        end
+      end
+
+      if report.failed?
+        rollback
+        finalize
+
+        if cancel_failure?
+          @flow.log_failure(report.message)
+        else
+          Supervisor.resignal!(report)
+        end
+      elsif report.stopped? && !cancel_stop?
+        Supervisor.resignal!(report)
       end
     end
 
     def finalize
-      @execution_chains.reverse_each do |execution_chain|
-        execution_chain.reverse_each(&:finalize)
-      end
+      executed_groups_do(:finalize)
     end
 
     def rollback
-      @execution_chains.reverse_each do |execution_chain|
-        execution_chain.reverse_each(&:rollback)
-      end
+      executed_groups_do(:rollback)
     end
 
   protected
@@ -89,7 +80,7 @@ module WFlow
 
             process_worker.run_as_child(@flow)
           else
-            self.class.process_eval(@owner_process, component)
+            process_eval(component)
           end
         end
 
@@ -105,13 +96,39 @@ module WFlow
           end
         else
           if report.stopped? && (options[:stop].nil? || !options[:stop].call)
-            @execution_chains << execution_chain
+            @executed_node_groups << execution_chain
             Supervisor.resignal!(report)
           end
         end
       end
 
-      @execution_chains << execution_chain
+      @executed_node_groups << execution_chain
+    end
+
+    def process_eval(object, *args)
+      if object.is_a?(String) || object.is_a?(Symbol)
+        @process.send(object.to_s, *args)
+      elsif object.is_a?(Proc)
+        @process.instance_exec(*args, &object)
+      else
+        raise InvalidArguments, UNKNOWN_EXPRESSION
+      end
+    end
+
+    def cancel_stop?
+      !@confirm_stop.nil? && !process_eval(@confirm_stop)
+    end
+
+    def cancel_failure?
+      !@confirm_failure.nil? && !process_eval(@confirm_failure)
+    end
+
+    def executed_groups_do(order)
+      @executed_node_groups.reverse_each do |execution_chain|
+        execution_chain.reverse_each(&order)
+      end
+
+      @executed_node_groups.clear
     end
 
   end

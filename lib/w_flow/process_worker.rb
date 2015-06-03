@@ -28,58 +28,44 @@ module WFlow
     end
 
     def finalize
-      @nodes.reverse_each(&:finalize)
+      @executed_nodes.reverse_each(&:finalize)
 
       @process.finalize if @setup_completed
     end
 
     def rollback
-      @nodes.reverse_each(&:rollback)
+      @executed_nodes.reverse_each(&:rollback)
 
       @process.rollback if @perform_completed
     end
 
   protected
 
+    def setup(flow)
+      @flow    = flow
+      @process = @process_class.new(flow)
+
+      @executed_nodes    = []
+      @setup_completed   = false
+      @perform_completed = false
+    end
+
     def run
       @process.setup
       @setup_completed = true
 
       @process_class.wflow_nodes.each do |node_class|
-        next unless node_class.execute?(@process)
-
         node = node_class.new(@process)
 
-        report = Supervisor.supervise { node.run(@flow) }
+        next unless node.execute?
 
-        if report.failed?
-          node.rollback
-          node.finalize
+        @executed_nodes << node
 
-          if node_class.cancel_failure?(@process)
-            @flow.log_failure(report.message)
-          else
-            Supervisor.resignal!(report)
-          end
-        else
-          @nodes << node
-
-          if report.stopped? && !node_class.cancel_stop?(@process)
-            Supervisor.resignal!(report)
-          end
-        end
+        report = node.run(@flow)
       end
 
       @process.perform
       @perform_completed = true
-    end
-
-    def setup(flow)
-      @flow    = flow
-      @process = @process_class.new(flow)
-      @nodes   = []
-      @setup_completed   = false
-      @perform_completed = false
     end
 
   end
