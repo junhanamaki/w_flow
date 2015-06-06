@@ -137,13 +137,12 @@ class SendWelcomeEmail
 
   attr_writer :admin_email
 
-  # you can pass a name or a proc to failure, and it will be called if one
-  # of the Processes in execute raises error
+  # you can pass a name or a proc as a failure handler, which will be called if one
+  # of the Processes in execute chain raises a flow failure
   execute FindUser, failure: :on_failure
 
-  # we'll use an if handler (there's also an unless handler), this means
-  # that the Processes passed to execute will be called only if @no_user_found is true
-  # also we compose a more complex execute chain
+  # we'll use an if handler (there's also an unless handler), which allows us to control if a execute chain
+  # should be executed or not
   execute :compose_email, SendMessageToAdmin, -> { flow.failure! }, if: -> { @no_user_found }
 
   def perform
@@ -167,10 +166,10 @@ end
 
 Wow it suddenly become complex, but it reflects a more realistic situation. So what's
 going on? First we try to find the user, which will raise a flow failure if no user
-is found. We want to inform the admin that something went wrong, so instead of allowing
+is found. In this case we want to inform the admin that something went wrong, so instead of allowing
 the flow to be interrupted right away, we return false in the failure handler to cancel failure.
 After that, the second execute chain will be executed, because @no_user_found is set to true. This
-execution chain will invoke the method compose_email, compose the process SendMessageToAdmin, and
+execution chain will invoke the method compose_email, SendMessageToAdmin, and than
 call proc that reraises failure.
 
 ## Contributing
