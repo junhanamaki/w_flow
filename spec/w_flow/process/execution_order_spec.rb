@@ -391,7 +391,7 @@ describe 'class that includes WFlow::Process' do
       end
     end
 
-    context 'when invoked on NProcess', :t do
+    context 'when invoked on NProcess' do
       let(:test_class) { NProcess }
 
       it 'returns success' do

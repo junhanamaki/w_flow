@@ -9,7 +9,7 @@
 WFlow aims to help on designing workflows based on [Single
 Responsibility Principle](http://en.wikipedia.org/wiki/Single_responsibility_principle). WFlow
 proposes to achieve this by providing tools to build classes where each are responsible for a task
-and one task only, and by providing tools to compose these classes.
+and one task only, and by providing tools to compose these into a workflow.
 
 Word of appreciation for [usecasing](https://github.com/tdantas/usecasing),
 [interactor](https://github.com/collectiveidea/interactor) and
@@ -40,66 +40,93 @@ Or install it yourself as:
 
 ## Usage
 
-Imagine a situation where we want to update an appointment, notify the user of that update,
-and publish it in google calendar if needed:
+In its most simplest form a Process would look like this:
 
 ```ruby
-class Find
+# Process to retrive a user from the database given a user_id
+class FindUser
+  # include module Process
   include WFlow::Process
 
-  # helper for flow.data
-  data_reader :appointment_id
-  data_writer :appointment
-
-  # perform is the name of the method that will be invoked when calling 'run'
+  # perform is where you'll execute your business logic
   def perform
-    self.appointment = Appointment.find(appointment_id)
+    # flow is an object present in a Process, and it is how you retrieve data
+    # from the current flow, in this case the input user_id
+    user_id = flow.data.user_id
 
-    # the previous code is the same as:
-    # flow.data.appointment = Appointment.find(flow.data.appointment_id)
+    # when you want to output a value from the Process you set it in data
+    flow.data.user = User.find(user_id)
+  end
+end
+```
+
+And you invoke it like this:
+
+```ruby
+# run will returns a report object
+report = FindUser.run(user_id: 10)
+
+# this report object will contain the output from the Process
+report.data.user
+```
+
+This and any other Process can be used to compose a workflow, so lets try that:
+
+```ruby
+class SendWelcomeEmail
+  include WFlow::Process
+
+  # use previously created Process to find the user
+  execute FindUser
+
+  def perform
+    # code to send email to user
   end
 end
 
-class UpdateAppointment
+report = SendWelcomeEmail.run(user_id: 10)
+```
+
+Processes passed to execute will be called before the perform method. You can
+have as any execute as you want and as many Processes in a execute. This means that
+when you run SendWelcomeEmail process, it will first execute FindUser which will
+set the user under flow.data, and than you can use that user to get the email address
+for where to send the email.
+
+So far so good, but lets go back to FindUser. Looking at it, we are currently not accounting for
+errors cases, like what should happen when we can't find an user, or when the connection to the
+database fails? This depends on what you want to do, but for this example we'll raise a flow failure,
+and we'll also simplify the code a bit:
+
+```ruby
+class FindUser
   include WFlow::Process
 
-  execute Find, Update, NotifyUser
+  # helper methods to access attributes under flow.data
+  data_reader   :user_id
+  data_accessor :user
 
-  execute PublishInGoogleCalendar, if: :publish_in_google_calendar?
-
-protected
-
-  def publish_in_google_calendar?
-    flow.data.appointment.synch_in_google_calendar?
+  def perform
+    self.user = User.find(user_id)
+  rescue
+    # you can pass whatever you want to the failure! method (or even call it without arguments)
+    # passed value will be available in returned report under failure_log
+    flow.failure!('unable to find user')
   end
 end
 
-# imagining that we have the id of the appointment to be updated and the new attributes for the appointment
-report = UpdateAppointment.run(appointment_id: appointment_id, attributes: new_attributes)
+report = FindUser.run(user_id: 10)
 
-# ask if workflow was a success
-report.success?
+# check if success
+unless report.success? # there's also a report.failure?
+  # failure_log is an array that contains all the objects passed to failure!
+  report.failure_log.each do |log|
+    puts log
+  end
+end
 ```
 
-So what's going on here? We first declare a class and included the module WFlow::Process, so that
-we can compose the workflow for this process:
 
-```ruby
-class UpdateAppointment
-  include WFlow::Process
-```
-
-Now we can start composing. We compose by reusing other processes like this:
-
-```ruby
-  # this indicates that it will first Find, Update next and NotifyUser last
-  execute Find, Update, NotifyUser
-
-  # execute this process, only if method returns true
-  execute PublishInGoogleCalendar, if: :publish_in_google_calendar?
-```
-
-TODO: more documentation
 
 ## Contributing
 
