@@ -88,15 +88,15 @@ report = SendWelcomeEmail.run(user_id: 10)
 ```
 
 Processes passed to execute will be called before the perform method. You can
-have as any execute as you want and as many Processes in a execute. This means that
-when you run SendWelcomeEmail process, it will first execute FindUser which will
+have as any execute as you want and as many Processes (and method nomes and Procs) in a execute.
+This means that when you run SendWelcomeEmail process, it will first execute FindUser which will
 set the user under flow.data, and than you can use that user to get the email address
 for where to send the email.
 
 So far so good, but lets go back to FindUser. Looking at it, we are currently not accounting for
 errors cases, like what should happen when we can't find an user, or when the connection to the
 database fails? This depends on what you want to do, but for this example we'll raise a flow failure,
-and we'll also simplify the code a bit:
+and we'll also simplify the code a bit using data helpers:
 
 ```ruby
 class FindUser
@@ -126,7 +126,52 @@ unless report.success? # there's also a report.failure?
 end
 ```
 
+Invoking failure! will interrupt a workflow immediatly. This means that if you run
+SendWelcomeEmail for a non existing user it will never run the code under perform (which
+is a good thing, since there's no one to send the email to). But what if we want to do
+something more even in case of failure? You can pass a handler for that:
 
+```ruby
+class SendWelcomeEmail
+  include WFlow::Process
+
+  attr_writer :admin_email
+
+  # you can pass a name or a proc to failure, and it will be called if one
+  # of the Processes in execute raises error
+  execute FindUser, failure: :on_failure
+
+  # we'll use an if handler (there's also an unless handler), this means
+  # that the Processes passed to execute will be called only if @no_user_found is true
+  # also we compose a more complex execute chain
+  execute :compose_email, SendMessageToAdmin, -> { flow.failure! }, if: -> { @no_user_found }
+
+  def perform
+    # ...
+  end
+
+protected
+
+  # failure handler, return false to cancel failure, or true to let Process fail
+  def on_failure
+    @no_user_found = true
+
+    false
+  end
+
+  def compose_email
+    self.admin_email = "we were unable to find user :("
+  end
+end
+```
+
+Wow it suddenly become complex, but it reflects a more realistic situation. So what's
+going on? First we try to find the user, which will raise a flow failure if no user
+is found. We want to inform the admin that something went wrong, so instead of allowing
+the flow to be interrupted right away, we return false in the failure handler to cancel failure.
+After that, the second execute chain will be executed, because @no_user_found is set to true. This
+execution chain will invoke the method compose_email, compose the process SendMessageToAdmin, and
+call proc that reraises failure.
 
 ## Contributing
 
