@@ -172,6 +172,8 @@ After that, the second execute chain will be executed, because @no_user_found is
 execution chain will invoke the method compose_email, SendMessageToAdmin, and than
 call proc that reraises failure.
 
+This is some of the features of WFlow, please check [wiki](https://github.com/junhanamaki/w_flow/wiki) for more details.
+
 ## Contributing
 
 1. Fork it ( https://github.com/junhanamaki/w_flow/fork )
