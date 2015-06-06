@@ -7,34 +7,6 @@ describe 'class that includes WFlow::Process' do
   before                { @report = test_class.run(params) }
 
   describe '.run' do
-    context 'when invoked on MProcess' do
-      let(:test_class) { MProcess }
-
-      it 'reports failure' do
-        expect(@report.failure?).to eq(true)
-      end
-
-      it 'returned execution_order has 4 entries' do
-        expect(execution_order.count).to eq(4)
-      end
-
-      it 'executes MProcess#setup first' do
-        expect(execution_order[0]).to eq('m_setup')
-      end
-
-      it 'executes BProcess#setup second' do
-        expect(execution_order[1]).to eq('b_setup')
-      end
-
-      it 'executes BProcess#finalize third' do
-        expect(execution_order[2]).to eq('b_finalize')
-      end
-
-      it 'executes MProcess#finalize fourth' do
-        expect(execution_order[3]).to eq('m_finalize')
-      end
-    end
-
     context 'when invoked on AProcess' do
       let(:test_class) { AProcess }
 
@@ -388,6 +360,118 @@ describe 'class that includes WFlow::Process' do
 
       it 'executes LProcess#finalize eleventh' do
         expect(execution_order[10]).to eq('l_finalize')
+      end
+    end
+
+    context 'when invoked on MProcess' do
+      let(:test_class) { MProcess }
+
+      it 'reports failure' do
+        expect(@report.failure?).to eq(true)
+      end
+
+      it 'returned execution_order has 4 entries' do
+        expect(execution_order.count).to eq(4)
+      end
+
+      it 'executes MProcess#setup first' do
+        expect(execution_order[0]).to eq('m_setup')
+      end
+
+      it 'executes BProcess#setup second' do
+        expect(execution_order[1]).to eq('b_setup')
+      end
+
+      it 'executes BProcess#finalize third' do
+        expect(execution_order[2]).to eq('b_finalize')
+      end
+
+      it 'executes MProcess#finalize fourth' do
+        expect(execution_order[3]).to eq('m_finalize')
+      end
+    end
+
+    context 'when invoked on NProcess', :t do
+      let(:test_class) { NProcess }
+
+      it 'returns success' do
+        expect(@report.success?).to eq(true)
+      end
+
+      it 'returns 18 entries in execution order' do
+        expect(execution_order.count).to eq(18)
+      end
+
+      it 'executes NProcess#setup first' do
+        expect(execution_order[0]).to eq('n_setup')
+      end
+
+      it 'executes MProcess#setup second' do
+        expect(execution_order[1]).to eq('m_setup')
+      end
+
+      it 'executes BProcess#setup third' do
+        expect(execution_order[2]).to eq('b_setup')
+      end
+
+      it 'executes BProcess#finalize fourth' do
+        expect(execution_order[3]).to eq('b_finalize')
+      end
+
+      it 'executes MProcess#finalize fifth' do
+        expect(execution_order[4]).to eq('m_finalize')
+      end
+
+      it 'executes LProcess#setup sixth' do
+        expect(execution_order[5]).to eq('l_setup')
+      end
+
+      it 'executes AProcess#setup seventh' do
+        expect(execution_order[6]).to eq('a_setup')
+      end
+
+      it 'executes AProcess#perform eight' do
+        expect(execution_order[7]).to eq('a_perform')
+      end
+
+      it 'executes BProcess#setup ninth' do
+        expect(execution_order[8]).to eq('b_setup')
+      end
+
+      it 'executes AProcess#rollback tenth' do
+        expect(execution_order[9]).to eq('a_rollback')
+      end
+
+      it 'executes BProcess#finalize eleventh' do
+        expect(execution_order[10]).to eq('b_finalize')
+      end
+
+      it 'executes AProcess#finalize twelveth' do
+        expect(execution_order[11]).to eq('a_finalize')
+      end
+
+      it 'executes procedure thirteenth' do
+        expect(execution_order[12]).to eq('proc')
+      end
+
+      it 'executes procesure fourteenth' do
+        expect(execution_order[13]).to eq('proc')
+      end
+
+      it 'executes LProcess#perform fifteenth' do
+        expect(execution_order[14]).to eq('l_perform')
+      end
+
+      it 'executes NProcess#perform sixteenth' do
+        expect(execution_order[15]).to eq('n_perform')
+      end
+
+      it 'executes LProcess#finalize seventeenth' do
+        expect(execution_order[16]).to eq('l_finalize')
+      end
+
+      it 'executes NProcess#finalize eighteenth' do
+        expect(execution_order[17]).to eq('n_finalize')
       end
     end
   end
