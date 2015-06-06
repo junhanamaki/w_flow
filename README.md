@@ -8,8 +8,7 @@
 
 WFlow aims to help on designing workflows based on [Single
 Responsibility Principle](http://en.wikipedia.org/wiki/Single_responsibility_principle). WFlow
-proposes to achieve this by providing tools to build classes where each are responsible for a task
-and one task only, and by providing tools to compose these into a workflow.
+proposes to achieve this by providing tools to help compose those classes into a workflow.
 
 Word of appreciation for [usecasing](https://github.com/tdantas/usecasing),
 [interactor](https://github.com/collectiveidea/interactor) and
