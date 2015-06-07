@@ -63,7 +63,7 @@ module WFlow
 
         FlowReport.new(flow)
       rescue ::StandardError => e
-        raise if e.is_a?(StandardError) || !Configuration.supress_errors?
+        raise unless Configuration.supress_errors?
 
         set_failure_and_log(message: e.message, backtrace: e.backtrace)
 
