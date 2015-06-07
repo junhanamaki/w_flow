@@ -89,7 +89,7 @@ report = SendWelcomeEmail.run(user_id: 10)
 Processes passed to execute will be called before the perform method. You can
 have as any execute as you want and as many Processes (and method nomes and Procs) in a execute.
 This means that when you run SendWelcomeEmail process, it will first execute FindUser which will
-set the user under flow.data, and than you can use that user to get the email address
+set the user under flow.data, and then you can use that user to get the email address
 for where to send the email.
 
 So far so good, but lets go back to FindUser. Looking at it, we are currently not accounting for
@@ -168,7 +168,7 @@ going on? First we try to find the user, which will raise a flow failure if no u
 is found. In this case we want to inform the admin that something went wrong, so instead of allowing
 the flow to be interrupted right away, we return false in the failure handler to cancel failure.
 After that, the second execute chain will be executed, because @no_user_found is set to true. This
-execution chain will invoke the method compose_email, SendMessageToAdmin, and than
+execution chain will invoke the method compose_email, SendMessageToAdmin, and
 call proc that reraises failure.
 
 This is some of the features of WFlow, please check [wiki](https://github.com/junhanamaki/w_flow/wiki) for more details.
