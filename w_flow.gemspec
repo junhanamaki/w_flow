@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["junhanamaki"]
   spec.email         = ["jun.hanamaki@gmail.com"]
 
-  spec.summary       = %q{A workflow composer based on Single Responsability Principle to help organize projects}
-  spec.description   = %q{WFlow is a workflow composer that helps in organizing projects by splitting logic into reusable modules (processes)}
+  spec.summary       = %q{A workflow composer based on Single Responsability Principle}
+  spec.description   = %q{WFlow is a workflow composer that helps in code organization by splitting logic into reusable modules, more at https://github.com/junhanamaki/w_flow}
   spec.homepage      = "https://github.com/junhanamaki/w_flow"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
