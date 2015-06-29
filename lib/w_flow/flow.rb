@@ -1,7 +1,7 @@
 module WFlow
   class Flow
 
-    attr_reader :data
+    attr_reader :data, :failure_log
 
     def initialize(params)
       @data        = Data.new(params)

@@ -52,8 +52,8 @@ module WFlow
     end
 
     def run
-      @process.setup
       @setup_completed = true
+      @process.setup
 
       @process_class.wflow_nodes.each do |node_class|
         node_worker = NodeWorker.new(@process, node_class)
